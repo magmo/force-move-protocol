@@ -18,14 +18,14 @@ class PaymentGame {
 class InitializationState extends State {
     constructor({ channel, resolution, turnNum, stateCount }) {
         super(...arguments);
-        this.stateType = State.StateTypes.PROPOSE;
+        this.stateType = State.StateTypes.PREFUNDSETUP;
     }
 }
 
 class FundConfirmationState extends State {
     constructor({ channel, resolution, turnNum, stateCount }) {
         super(...arguments);
-        this.stateType = State.StateTypes.ACCEPT;
+        this.stateType = State.StateTypes.POSTFUNDSETUP;
     }
 }
 

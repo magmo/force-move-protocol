@@ -6,10 +6,10 @@ class RpsGame {
     return new RestState(...arguments);
   }
   static proposeState({ channel, resolution, turnNum, stake, aPlay, salt }) {
-    return new ProposeState(...arguments);
+    return new PreFundSetupState(...arguments);
   }
   static acceptState({ channel, resolution, turnNum, stake, preCommit, bPlay }) {
-    return new AcceptState(...arguments);
+    return new PostFundSetupState(...arguments);
   }
   static revealState({ channel, resolution, turnNum, stake, aPlay, bPlay, salt}) {
     return new RevealState(...arguments);
@@ -76,7 +76,7 @@ class RpsBaseState extends State {
 class InitializationState extends RpsBaseState {
   constructor({ channel, stateCount, resolution, turnNum }) {
     super(...arguments);
-    this.stateType = State.StateTypes.PROPOSE;
+    this.stateType = State.StateTypes.PREFUNDSETUP;
     this.positionType = RpsGame.PositionTypes.RESTING;
   }
 }
@@ -84,12 +84,12 @@ class InitializationState extends RpsBaseState {
 class FundConfirmationState extends RpsBaseState {
   constructor({ channel, stateCount, resolution, turnNum }) {
     super(...arguments);
-    this.stateType = State.StateTypes.ACCEPT;
+    this.stateType = State.StateTypes.POSTFUNDSETUP;
     this.positionType = RpsGame.PositionTypes.RESTING;
   }
 }
 
-class ProposeState extends RpsBaseState {
+class PreFundSetupState extends RpsBaseState {
   constructor({ channel, resolution, turnNum, stake, aPlay, salt }) {
     super(...arguments);
     this.stateType = State.StateTypes.GAME;
@@ -98,7 +98,7 @@ class ProposeState extends RpsBaseState {
   }
 }
 
-class AcceptState extends RpsBaseState {
+class PostFundSetupState extends RpsBaseState {
   constructor({ channel, resolution, turnNum, stake, preCommit, bPlay }) {
     super(...arguments);
     this.stateType = State.StateTypes.GAME;
