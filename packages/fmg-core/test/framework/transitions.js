@@ -37,10 +37,10 @@ contract('Rules', (accounts) => {
         return await framework.validTransition(state1.toHex(), state2.toHex());
     };
 
-    describe("propose -> propose", () => {
+    describe("preFundSetup -> preFundSetup", () => {
         beforeEach(() => {
-            fromState = CountingGame.proposeState({ ...defaults, turnNum: 0, stateCount: 0 });
-            toState = CountingGame.proposeState({ ...defaults, turnNum: 1, stateCount: 1 });
+            fromState = CountingGame.preFundSetupState({ ...defaults, turnNum: 0, stateCount: 0 });
+            toState = CountingGame.preFundSetupState({ ...defaults, turnNum: 1, stateCount: 1 });
         });
 
         it("allows a valid transition", async () => {
@@ -72,10 +72,10 @@ contract('Rules', (accounts) => {
     });
 
 
-    describe("propose -> accept", () => {
+    describe("preFundSetup -> PostFundSetup", () => {
         beforeEach(() => {
-            fromState = CountingGame.proposeState({ ...defaults, turnNum: 1, stateCount: 1 });
-            toState = CountingGame.acceptState({ ...defaults, turnNum: 2, stateCount: 0 });
+            fromState = CountingGame.preFundSetupState({ ...defaults, turnNum: 1, stateCount: 1 });
+            toState = CountingGame.PostFundSetupState({ ...defaults, turnNum: 2, stateCount: 0 });
         });
 
         it("allows a valid transition", async() => {
@@ -92,7 +92,7 @@ contract('Rules', (accounts) => {
             await assertRevert(validTransition(fromState, toState));
         });
 
-        it("rejects a transition not from the last propose state", async() => {
+        it("rejects a transition not from the last preFundSetup state", async() => {
             fromState.stateCount = 0;
             await assertRevert(validTransition(fromState, toState));
         });
@@ -113,9 +113,9 @@ contract('Rules', (accounts) => {
         });
     });
 
-    describe("propose -> conclude", () => {
+    describe("preFundSetup -> conclude", () => {
         beforeEach(() => {
-            fromState = CountingGame.proposeState({ ...defaults, turnNum: 1, stateCount: 1 });
+            fromState = CountingGame.preFundSetupState({ ...defaults, turnNum: 1, stateCount: 1 });
             toState = CountingGame.concludeState({ ...defaults, turnNum: 2 });
         });
 
@@ -138,16 +138,16 @@ contract('Rules', (accounts) => {
             await assertRevert(validTransition(fromState, toState));
         });
 
-        it("rejects a transition not from the last propose state", async () => {
+        it("rejects a transition not from the last preFundSetup state", async () => {
             fromState.stateCount = 0;
             await assertRevert(validTransition(fromState, toState));
         });
     });
 
-    describe("accept -> accept", () => {
+    describe("PostFundSetup -> PostFundSetup", () => {
         beforeEach(() => {
-            fromState = CountingGame.acceptState({ ...defaults, turnNum: 1, stateCount: 0 });
-            toState = CountingGame.acceptState({ ...defaults, turnNum: 2, stateCount: 1 });
+            fromState = CountingGame.PostFundSetupState({ ...defaults, turnNum: 1, stateCount: 0 });
+            toState = CountingGame.PostFundSetupState({ ...defaults, turnNum: 2, stateCount: 1 });
         });
 
         it("allows a valid transition", async () => {
@@ -174,16 +174,16 @@ contract('Rules', (accounts) => {
             await assertRevert(validTransition(fromState, toState));
         });
 
-        it("rejects a transition from the last accept state", async () => {
+        it("rejects a transition from the last PostFundSetup state", async () => {
             fromState.stateCount = 1;
             await assertRevert(validTransition(fromState, toState));
         });
     });
 
 
-    describe("accept -> conclude", () => {
+    describe("PostFundSetup -> conclude", () => {
         beforeEach(() => {
-            fromState = CountingGame.acceptState({ ...defaults, turnNum: 1, stateCount: 0 });
+            fromState = CountingGame.PostFundSetupState({ ...defaults, turnNum: 1, stateCount: 0 });
             toState = CountingGame.concludeState({ ...defaults, turnNum: 2 });
         });
 
@@ -206,15 +206,15 @@ contract('Rules', (accounts) => {
             await assertRevert(validTransition(fromState, toState));
         });
 
-        it("rejects a transition from the last accept state", async () => {
+        it("rejects a transition from the last PostFundSetup state", async () => {
             fromState.stateCount = 1;
             await assertRevert(validTransition(fromState, toState));
         });
     });
 
-    describe("accept -> game", () => {
+    describe("PostFundSetup -> game", () => {
         beforeEach(() => {
-            fromState = CountingGame.acceptState({ ...defaults, turnNum: 1, stateCount: 1, gameCounter: 3 });
+            fromState = CountingGame.PostFundSetupState({ ...defaults, turnNum: 1, stateCount: 1, gameCounter: 3 });
             toState = CountingGame.gameState({ ...defaults, turnNum: 2, gameCounter: 4 });
         });
 
@@ -232,7 +232,7 @@ contract('Rules', (accounts) => {
             await assertRevert(validTransition(fromState, toState));
         });
 
-        it("rejects a transition not from the last accept state", async () => {
+        it("rejects a transition not from the last PostFundSetup state", async () => {
             fromState.stateCount = 0;
             await assertRevert(validTransition(fromState, toState));
         });
