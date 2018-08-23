@@ -10,7 +10,7 @@
   },
   "scripts": {
     "clean": "shx rm -rf lib",
-    "copy_contracts": "copyfiles './contracts/**/*' './migrations/**/*' ./lib",
+    "copy_contracts": "copyfiles './contracts/**/*' ./lib",
     "pre_build": "run-s copy_contracts",
     "build": "run-s clean copy_contracts && tsc",
     "test": "npm run build && (cd lib; truffle test)"
