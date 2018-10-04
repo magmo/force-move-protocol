@@ -7,7 +7,7 @@
 		"test:fmg-simple-adjudicator": "(cd packages/fmg-simple-adjudicator && npm test)"
 	},
 	"devDependencies": {
-		"lerna": "^2.11.0",
+		"lerna": "^3.4.1",
 		"npm-run-all": "^4.1.3"
 	},
 	"dependencies": {}
