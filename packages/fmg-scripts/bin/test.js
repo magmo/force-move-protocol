@@ -1,3 +1,4 @@
+#! /usr/local/bin/node
 'use strict';
 
 // Do this as the first thing so that any code reading it knows the right env.
@@ -16,7 +17,7 @@ const {
   deployContracts,
   startGanache,
   runJest
-} = require('./helperFunctions');
+} = require('../utils/helperFunctions');
 process.env.DEV_GANACHE_PORT = 7447;
 process.env.DEV_GANACHE_HOST = '127.0.0.1';
 startGanache().then(deployContracts).then(runJest);
