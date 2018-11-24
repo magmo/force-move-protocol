@@ -10,6 +10,7 @@
   "scripts": {
     "test:all": "node ../../scripts/test.js --env=jsdom --all",
     "test": "node ../../scripts/test.js --env=jsdom",
+    "test:ci": "npm run test",
     "deployContracts": "node -e 'require(\"../../scripts/helperFunctions.js\").deployContracts()'",
     "build": "npm run deployContracts && tslint --project .",
     "ganache:start": "node -e 'require(\"../../scripts/helperFunctions.js\").startGanache()'"
