@@ -3,11 +3,8 @@
   "version": "0.1.6",
   "description": "Scripts used for force-move development processes",
   "main": "index.js",
-  "scripts": {
-    "test": "test"
-  },
   "bin": {
-    "test": "bin/test.js"
+    "test": "node bin/test.js"
   },
   "author": "Andrew Stewart",
   "license": "MIT",
