@@ -9,9 +9,17 @@
 	},
 	"devDependencies": {
 		"@types/jest": "^23.3.9",
+		"chai": "^4.2.0",
+		"detect-port": "1.3.0",
+		"dotenv": "^6.1.0",
+		"esm": "^3.0.52",
+		"ethers": "^4.0.13",
+		"ganache-cli": "6.2.3",
 		"jest": "^23.6.0",
 		"lerna": "^3.4.1",
 		"npm-run-all": "^4.1.3",
+		"solc": "^0.5.0",
+		"truffle": "5.0.0-user-level-mnemonic.0",
 		"ts-jest": "^23.10.4",
 		"typescript": "^3.1.6",
 		"websocket": "^1.0.28"
