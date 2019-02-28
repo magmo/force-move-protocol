@@ -107,6 +107,7 @@ describe('nitroAdjudicator', () => {
   let channel: Channel;
   let alice: ethers.Wallet;
   let aliceDest: ethers.Wallet;
+  let bobDest: ethers.Wallet;
   let bob: ethers.Wallet;
   let guarantor: ethers.Wallet;
   let commitment0;
@@ -130,6 +131,7 @@ describe('nitroAdjudicator', () => {
     bob = new ethers.Wallet("0xdf02719c4df8b9b8ac7f551fcb5d9ef48fa27eef7a66453879f4d8fdc6e78fb1");
     guarantor = ethers.Wallet.createRandom();
     aliceDest = ethers.Wallet.createRandom();
+    bobDest = ethers.Wallet.createRandom();
     CountingAppContract = await getCountingApp();
 
     const participants = [alice.address, bob.address];
@@ -778,9 +780,55 @@ describe('nitroAdjudicator', () => {
     });
 
     describe('concludeAndWithdraw', () => {
+
+      it('works when both participants call', async () => {
+        const total = bigNumberify(aBal).add(bBal);
+        const channelId = getChannelID(channel);
+        await depositTo(channelId, total.toNumber());
+        const aliceStartBal = await provider.getBalance(aliceDest.address);
+        const bobStartBal = await provider.getBalance(bobDest.address);
+        const allocatedAtStart = await nitro.holdings(channelId);
+
+        const { destination: startDestination, allocation: startAllocation, challengeCommitment: startCommitment, finalizedAt, guaranteedChannel } = await nitro.getOutcome(getChannelID(channel));
+        expect({ destination: startDestination, allocation: startAllocation, challengeCommitment: startCommitment, finalizedAt, guaranteedChannel }).toMatchObject(nullOutcome);
+
+        const senderAddr = await nitro.signer.getAddress();
+        const aliceAuth = abiCoder.encode(AUTH_TYPES, [alice.address, aliceDest.address, aBal, senderAddr]);
+        const bobAuth = abiCoder.encode(AUTH_TYPES, [bob.address, bobDest.address, bBal, senderAddr]);
+        const aliceSig = sign(aliceAuth, alice.privateKey);
+        const bobSig = sign(bobAuth, bob.privateKey);
+        const aliceTx = await nitro.concludeAndWithdraw(conclusionProof,
+          alice.address,
+          aliceDest.address,
+          aBal,
+          aliceSig.v,
+          aliceSig.r,
+          aliceSig.s,
+          { gasLimit: 3000000 });
+        await aliceTx.wait();
+
+        const bobTx = await nitro.concludeAndWithdraw(conclusionProof,
+          bob.address,
+          bobDest.address,
+          bBal,
+          bobSig.v,
+          bobSig.r,
+          bobSig.s,
+          { gasLimit: 3000000 });
+        await bobTx.wait();
+        expect(Number(await provider.getBalance(aliceDest.address))).toEqual(
+          Number(aliceStartBal.add(aBal)),
+        );
+        expect(Number(await provider.getBalance(bobDest.address))).toEqual(
+          Number(bobStartBal.add(bBal)),
+        );
+        expect(Number(await nitro.holdings(channelId))).toEqual(0);
+      });
+
+
       it('works when the channel is not concluded', async () => {
         const total = bigNumberify(aBal).add(bBal);
-          const channelId = getChannelID(channel);
+        const channelId = getChannelID(channel);
         await depositTo(channelId, total.toNumber());
         const startBal = await provider.getBalance(aliceDest.address);
         const allocatedAtStart = await nitro.holdings(channelId);
@@ -818,7 +866,7 @@ describe('nitroAdjudicator', () => {
         await depositTo(channelId, total.toNumber());
         const concludeTx = await nitro.conclude(conclusionProof);
         await concludeTx.wait();
-        
+
         const participant = alice.address;
         const destination = aliceDest.address;
         const senderAddr = await nitro.signer.getAddress();
