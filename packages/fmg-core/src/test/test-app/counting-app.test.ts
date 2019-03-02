@@ -10,6 +10,7 @@ import CountingCommitmentArtifact from '../../../build/contracts/CountingCommitm
 import CountingAppArtifact from '../../../build/contracts/CountingApp.json';
 import { createCommitment, CountingCommitment, args } from '../../test-app/counting-app';
 import { BigNumber } from 'ethers/utils';
+import { CommitmentType } from '../../commitment';
 
 const provider = new ethers.providers.JsonRpcProvider('http://localhost:8545');
 const signer = provider.getSigner();
@@ -51,6 +52,7 @@ describe('CountingApp', () => {
       channel,
       allocation: [numberToHexString(5), numberToHexString(4)],
       destination: [participantA.address, participantB.address],
+      commitmentType: CommitmentType.PreFundSetup,
     };
 
     commitment0 = createCommitment.app({
