@@ -17,7 +17,7 @@ import { getCountingApp } from './CountingApp';
 import { channelID as getChannelID } from 'fmg-core/lib/channel';
 import { asCoreCommitment } from 'fmg-core/lib/test-app/counting-app';
 import { CountingCommitment } from 'fmg-core/src/test-app/counting-app';
-import { fromParameters } from 'fmg-core/lib/commitment';
+import { fromParameters, CommitmentType } from 'fmg-core/lib/commitment';
 
 jest.setTimeout(20000);
 let nitro: ethers.Contract;
@@ -155,6 +155,7 @@ describe('nitroAdjudicator', () => {
       destination,
       allocation,
       commitmentCount: 1,
+      commitmentType: CommitmentType.PreFundSetup,
     };
 
     commitment0 = CountingApp.createCommitment.app({

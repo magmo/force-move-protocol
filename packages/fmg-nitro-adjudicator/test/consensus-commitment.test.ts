@@ -1,7 +1,7 @@
 import { ContractFactory, ethers } from 'ethers';
 import linker from 'solc/linker';
 import { getNetworkId, getGanacheProvider } from 'magmo-devtools';
-import { Channel, asEthersObject, Commitment } from 'fmg-core';
+import { Channel, asEthersObject, Commitment, CommitmentType } from 'fmg-core';
 import CommitmentArtifact from '../build/contracts/Commitment.json';
 import ConsensusCommitmentArtifact from '../build/contracts/ConsensusCommitment.json';
 import TestConsensusCommitmentArtifact from '../build/contracts/TestConsensusCommitment.json';
@@ -54,14 +54,21 @@ describe('ConsensusCommitment', () => {
   const proposedAllocation = [ethers.utils.bigNumberify(9).toHexString()];
 
   const channel: Channel = { channelType: participantB.address, nonce: 0, participants }; // just use any valid address
-  const defaults = { channel, allocation, destination: participants };
+  const defaults = {
+    channel,
+    allocation,
+    destination: participants,
+    commitmentType: CommitmentType.PreFundSetup,
+  };
   const commitment: Commitment = ConsensusApp.appCommitment({
     ...defaults,
     turnNum: 6,
     commitmentCount: 0,
-    consensusCounter: 1,
-    proposedAllocation,
-    proposedDestination,
+    appAttributes: {
+      consensusCounter: 1,
+      proposedAllocation,
+      proposedDestination,
+    },
   });
 
   it('works', async () => {

@@ -47,7 +47,7 @@ function preFundSetupCommitment(opts: ConsensusCommitment) {
   };
 }
 
-function postFundSetupCommitment(opts: ConsensusCommitment) {
+function postFundSetupCommitment(opts) {
   return {
     ...baseAttributes(opts),
     commitmentType: CommitmentType.PostFundSetup,

@@ -1,7 +1,7 @@
 import { ContractFactory, ethers } from 'ethers';
 import linker from 'solc/linker';
 import { getNetworkId, getGanacheProvider, expectRevert, delay } from 'magmo-devtools';
-import { Channel, ethereumArgs, toUint256 } from 'fmg-core';
+import { Channel, ethereumArgs, toUint256, CommitmentType } from 'fmg-core';
 
 import CommitmentArtifact from '../build/contracts/Commitment.json';
 import RulesArtifact from '../build/contracts/Rules.json';
@@ -68,6 +68,12 @@ describe('ConsensusApp', () => {
   const proposedAllocation = [toUint256(4), toUint256(2)];
 
   const channel: Channel = { channelType: participantB.address, nonce: 0, participants }; // just use any valid address
+  const defaultAppAttributes = {
+    consensusCounter: 0,
+    proposedAllocation,
+    proposedDestination,
+  };
+
   const defaults = {
     channel,
     allocation,
@@ -76,6 +82,8 @@ describe('ConsensusApp', () => {
     proposedDestination,
     proposedAllocation,
     commitmentCount: 0,
+    commitmentType: CommitmentType.PreFundSetup,
+    appAttributes: defaultAppAttributes,
   };
 
   beforeAll(async () => {
@@ -88,16 +96,17 @@ describe('ConsensusApp', () => {
     const fromCommitment = commitments.appCommitment({
       ...defaults,
       turnNum: 6,
-      consensusCounter: 0,
     });
     const toCommitment = commitments.appCommitment({
       ...defaults,
       allocation: proposedAllocation,
       destination: participants,
       turnNum: 6,
-      consensusCounter: 1,
-      proposedAllocation: [toUint256(1), toUint256(2)],
-      proposedDestination: [participantA.address],
+      appAttributes: {
+        consensusCounter: 1,
+        proposedAllocation: [toUint256(1), toUint256(2)],
+        proposedDestination: [participantA.address],
+      },
     });
     invalidTransition(
       fromCommitment,
@@ -110,12 +119,11 @@ describe('ConsensusApp', () => {
     const fromCommitment = commitments.appCommitment({
       ...defaults,
       turnNum: 6,
-      consensusCounter: 0,
     });
     const toCommitment = commitments.appCommitment({
       ...defaults,
       turnNum: 6,
-      consensusCounter: 2,
+      appAttributes: { ...defaultAppAttributes, consensusCounter: 2 },
     });
     invalidTransition(
       fromCommitment,
@@ -128,14 +136,14 @@ describe('ConsensusApp', () => {
     const fromCommitment = commitments.appCommitment({
       ...defaults,
       turnNum: 6,
-      consensusCounter: NUM_PARTICIPANTS - 1,
+      appAttributes: { ...defaultAppAttributes, consensusCounter: NUM_PARTICIPANTS - 1 },
     });
     const toCommitmentArgs = {
       ...defaults,
       allocation: proposedAllocation,
       destination: proposedDestination,
       turnNum: 6,
-      consensusCounter: 0,
+      appAttributes: { ...defaultAppAttributes, consensusCounter: 0 },
     };
 
     it('returns true when the current balances have properly been set', async () => {
@@ -146,7 +154,7 @@ describe('ConsensusApp', () => {
     it('reverts when the consensusCounter is not reset', async () => {
       const toCommitment = commitments.appCommitment({
         ...toCommitmentArgs,
-        consensusCounter: 1,
+        appAttributes: { ...defaultAppAttributes, consensusCounter: 1 },
       });
 
       invalidTransition(
@@ -186,11 +194,10 @@ describe('ConsensusApp', () => {
   describe('when the consensus round is ongoing and the counter was not reset', () => {
     const fromCommitment = commitments.appCommitment({
       ...defaults,
-      consensusCounter: 0,
     });
     const toCommitmentArgs = {
       ...defaults,
-      consensusCounter: 1,
+      appAttributes: { ...defaultAppAttributes, consensusCounter: 1 },
     };
     it("returns true when the consensus round is ongoing and the proposed balances haven't changed", async () => {
       const toCommitment = commitments.appCommitment(toCommitmentArgs);
@@ -227,7 +234,11 @@ describe('ConsensusApp', () => {
     it('reverts when the proposedAllocation changes', async () => {
       const toCommitment = commitments.appCommitment({
         ...toCommitmentArgs,
-        proposedAllocation: [toUint256(99), toUint256(99)],
+        appAttributes: {
+          ...defaultAppAttributes,
+          consensusCounter: 1,
+          proposedAllocation: [toUint256(99), toUint256(99)],
+        },
       });
 
       invalidTransition(
@@ -240,7 +251,11 @@ describe('ConsensusApp', () => {
     it('reverts when the proposedDestination changes', async () => {
       const toCommitment = commitments.appCommitment({
         ...toCommitmentArgs,
-        proposedDestination: [participantB.address, participantA.address],
+        appAttributes: {
+          ...defaultAppAttributes,
+          consensusCounter: 1,
+          proposedDestination: [participantB.address, participantA.address],
+        },
       });
 
       invalidTransition(
@@ -254,11 +269,10 @@ describe('ConsensusApp', () => {
   describe('when the consensus round is ongoing and the counter was reset', () => {
     const fromCommitment = commitments.appCommitment({
       ...defaults,
-      consensusCounter: 1,
+      appAttributes: { ...defaultAppAttributes, consensusCounter: 1 },
     });
     const toCommitmentArgs = {
       ...defaults,
-      consensusCounter: 0,
     };
     it('returns true when the consensus round is reset before the end of the round', async () => {
       const toCommitment = commitments.appCommitment(toCommitmentArgs);
@@ -296,10 +310,12 @@ describe('ConsensusApp', () => {
     it('works', async () => {
       const c = commitments.appCommitment({
         ...defaults,
-        consensusCounter: 1,
+        appAttributes: { ...defaultAppAttributes, consensusCounter: 1 },
       });
 
-      expect(c).toMatchObject(appAttributesFromBytes(bytesFromAppAttributes(c)));
+      expect(c.appAttributes).toEqual(
+        bytesFromAppAttributes(appAttributesFromBytes(c.appAttributes)),
+      );
     });
   });
 });
