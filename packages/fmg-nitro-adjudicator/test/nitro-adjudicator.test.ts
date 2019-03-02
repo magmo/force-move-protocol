@@ -27,7 +27,7 @@ const providerSigner = provider.getSigner();
 
 const DEPOSIT_AMOUNT = 255; //
 const SMALL_WITHDRAW_AMOUNT = 10;
-const ZERO_ADDRESS = "0x" + "0".repeat(40);
+const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 let nullOutcome: {} | any[];
 const AUTH_TYPES = ['address', 'address', 'uint256', 'address'];
@@ -41,21 +41,20 @@ async function withdraw(
   destination: Address,
   signer = participant,
   amount = DEPOSIT_AMOUNT,
-  senderAddr = null
+  senderAddr = null,
 ): Promise<any> {
-  senderAddr = senderAddr || await nitro.signer.getAddress();
-  const authorization = abiCoder.encode(AUTH_TYPES, [participant.address, destination, amount, senderAddr]);
-
-  const sig = sign(authorization, signer.privateKey);
-  return nitro.withdraw(
+  senderAddr = senderAddr || (await nitro.signer.getAddress());
+  const authorization = abiCoder.encode(AUTH_TYPES, [
     participant.address,
     destination,
     amount,
-    sig.v,
-    sig.r,
-    sig.s,
-    { gasLimit: 3000000 },
-  );
+    senderAddr,
+  ]);
+
+  const sig = sign(authorization, signer.privateKey);
+  return nitro.withdraw(participant.address, destination, amount, sig.v, sig.r, sig.s, {
+    gasLimit: 3000000,
+  });
 }
 
 async function setupContracts() {
@@ -72,12 +71,21 @@ async function setupContracts() {
     networkId,
   );
 
-  const nitroFactory = await ContractFactory.fromSolidity(testNitroAdjudicatorArtifact, providerSigner);
+  const nitroFactory = await ContractFactory.fromSolidity(
+    testNitroAdjudicatorArtifact,
+    providerSigner,
+  );
   const deployTran = await nitroFactory.getDeployTransaction();
   const estimate = await provider.estimateGas(deployTran);
   nitro = await nitroFactory.deploy();
   await nitro.deployed();
-  const unwrap = ({ challengeCommitment, finalizedAt, guaranteedChannel }) => ({ challengeCommitment, finalizedAt, guaranteedChannel, allocation: [], destination: [], });
+  const unwrap = ({ challengeCommitment, finalizedAt, guaranteedChannel }) => ({
+    challengeCommitment,
+    finalizedAt,
+    guaranteedChannel,
+    allocation: [],
+    destination: [],
+  });
   nullOutcome = { ...unwrap(await nitro.outcomes(nitro.address)) };
 }
 const getHexForCommitment = (commitment: CountingCommitment) => {
@@ -126,8 +134,8 @@ describe('nitroAdjudicator', () => {
     await setupContracts();
 
     // alice and bob are both funded by startGanache in magmo devtools.
-    alice = new ethers.Wallet("0x5d862464fe9303452126c8bc94274b8c5f9874cbd219789b3eb2128075a76f72");
-    bob = new ethers.Wallet("0xdf02719c4df8b9b8ac7f551fcb5d9ef48fa27eef7a66453879f4d8fdc6e78fb1");
+    alice = new ethers.Wallet('0x5d862464fe9303452126c8bc94274b8c5f9874cbd219789b3eb2128075a76f72');
+    bob = new ethers.Wallet('0xdf02719c4df8b9b8ac7f551fcb5d9ef48fa27eef7a66453879f4d8fdc6e78fb1');
     guarantor = ethers.Wallet.createRandom();
     aliceDest = ethers.Wallet.createRandom();
     CountingAppContract = await getCountingApp();
@@ -274,14 +282,19 @@ describe('nitroAdjudicator', () => {
         await depositTo(alice.address);
         const allocated = await nitro.holdings(alice.address); // should be at least DEPOSIT_AMOUNT, regardless of test ordering
         expect.assertions(expectedAssertions);
-        await expectRevert(() => withdraw(alice, aliceDest.address, alice, Number(allocated) + 100000));
+        await expectRevert(() =>
+          withdraw(alice, aliceDest.address, alice, Number(allocated) + 100000),
+        );
       });
 
       it('reverts when unauthorized', async () => {
         await depositTo(alice.address);
         const allocated = await nitro.holdings(alice.address); // should be at least DEPOSIT_AMOUNT, regardless of test ordering
         expect.assertions(expectedAssertions);
-        await expectRevert(() => withdraw(alice, aliceDest.address, alice, 0, alice.address), "Withdraw: not authorized by participant"); // alice doesn't sign transactions, so the signature is incorrect 
+        await expectRevert(
+          () => withdraw(alice, aliceDest.address, alice, 0, alice.address),
+          'Withdraw: not authorized by participant',
+        ); // alice doesn't sign transactions, so the signature is incorrect
       });
     });
 
@@ -289,58 +302,55 @@ describe('nitroAdjudicator', () => {
       it('works when \
           the outcome is final and \
           outcomes[fromChannel].destination is covered by holdings[fromChannel]', async () => {
-          await depositTo(getChannelID(channel));
-          await depositTo(guarantor.address);
+        await depositTo(getChannelID(channel));
+        await depositTo(guarantor.address);
 
-          const allocationOutcome = {
-            destination: [alice.address, bob.address],
-            allocation,
-            finalizedAt: ethers.utils.bigNumberify(1),
-            challengeCommitment: getEthersObjectForCommitment(commitment0),
-            guaranteedChannel: ZERO_ADDRESS,
-          };
-          const tx = await nitro.setOutcome(getChannelID(channel), allocationOutcome);
-          await tx.wait();
+        const allocationOutcome = {
+          destination: [alice.address, bob.address],
+          allocation,
+          finalizedAt: ethers.utils.bigNumberify(1),
+          challengeCommitment: getEthersObjectForCommitment(commitment0),
+          guaranteedChannel: ZERO_ADDRESS,
+        };
+        const tx = await nitro.setOutcome(getChannelID(channel), allocationOutcome);
+        await tx.wait();
 
-          const allocatedToChannel = await nitro.holdings(getChannelID(channel));
-          const allocatedToAlice = await nitro.holdings(alice.address);
+        const allocatedToChannel = await nitro.holdings(getChannelID(channel));
+        const allocatedToAlice = await nitro.holdings(alice.address);
 
-          await nitro.transfer(getChannelID(channel), alice.address, allocation[0]);
+        await nitro.transfer(getChannelID(channel), alice.address, allocation[0]);
 
-          expect(await nitro.holdings(alice.address)).toEqual(allocatedToAlice.add(allocation[0]));
-          expect(await nitro.holdings(getChannelID(channel))).toEqual(
-            allocatedToChannel.sub(allocation[0]),
-          );
+        expect(await nitro.holdings(alice.address)).toEqual(allocatedToAlice.add(allocation[0]));
+        expect(await nitro.holdings(getChannelID(channel))).toEqual(
+          allocatedToChannel.sub(allocation[0]),
+        );
+      });
 
-        });
-
-        it('works when \
+      it('works when \
         the outcome is final and \
         outcomes[fromChannel].destination is covered by holdings[fromChannel] and \
         the same participant calls it twice', async () => {
-          await depositTo(getChannelID(channel));
+        await depositTo(getChannelID(channel));
 
-          const allocationOutcome = {
-            destination: [alice.address, bob.address],
-            allocation,
-            finalizedAt: ethers.utils.bigNumberify(1),
-            challengeCommitment: getEthersObjectForCommitment(commitment0),
-            guaranteedChannel: ZERO_ADDRESS,
-          };
-          const tx = await nitro.setOutcome(getChannelID(channel), allocationOutcome);
-          await tx.wait();
+        const allocationOutcome = {
+          destination: [alice.address, bob.address],
+          allocation,
+          finalizedAt: ethers.utils.bigNumberify(1),
+          challengeCommitment: getEthersObjectForCommitment(commitment0),
+          guaranteedChannel: ZERO_ADDRESS,
+        };
+        const tx = await nitro.setOutcome(getChannelID(channel), allocationOutcome);
+        await tx.wait();
 
-          const allocatedToChannel = await nitro.holdings(getChannelID(channel));
-          const allocatedToAlice = await nitro.holdings(alice.address);
+        const allocatedToChannel = await nitro.holdings(getChannelID(channel));
+        const allocatedToAlice = await nitro.holdings(alice.address);
 
-          await nitro.transfer(getChannelID(channel), alice.address, 1);
-          await nitro.transfer(getChannelID(channel), alice.address, 1);
+        await nitro.transfer(getChannelID(channel), alice.address, 1);
+        await nitro.transfer(getChannelID(channel), alice.address, 1);
 
-          expect(await nitro.holdings(alice.address)).toEqual(allocatedToAlice.add(2));
-          expect(await nitro.holdings(getChannelID(channel))).toEqual(
-            allocatedToChannel.sub(2),
-          );
-        });
+        expect(await nitro.holdings(alice.address)).toEqual(allocatedToAlice.add(2));
+        expect(await nitro.holdings(getChannelID(channel))).toEqual(allocatedToChannel.sub(2));
+      });
 
       it('works when \
       the outcome is final and \
@@ -367,9 +377,7 @@ describe('nitroAdjudicator', () => {
 
         expect(await nitro.holdings(alice.address)).toEqual(allocatedToAlice.add(1));
         expect(await nitro.holdings(bob.address)).toEqual(allocatedToBob.add(1));
-        expect(await nitro.holdings(getChannelID(channel))).toEqual(
-          allocatedToChannel.sub(2),
-        );
+        expect(await nitro.holdings(getChannelID(channel))).toEqual(allocatedToChannel.sub(2));
       });
 
       it('reverts when the outcome is not final', async () => {
@@ -388,7 +396,6 @@ describe('nitroAdjudicator', () => {
           () => nitro.transfer(getChannelID(channel), aliceDest.address, allocation[0]),
           'Transfer: outcome must be final',
         );
-
       });
 
       it('reverts when the outcome is final but the destination is not covered', async () => {
@@ -405,38 +412,43 @@ describe('nitroAdjudicator', () => {
 
         expect.assertions(expectedAssertions);
         await expectRevert(
-          () => nitro.transfer(getChannelID(channel), alice.address, bigNumberify(allocated).add(1)),
+          () =>
+            nitro.transfer(getChannelID(channel), alice.address, bigNumberify(allocated).add(1)),
           'Transfer: holdings[channel] must cover transfer',
         );
-
       });
 
       it('reverts when the outcome is final \
               and the destination is covered by holdings[channel] \
               but outcome.amount[destination] < amount', async () => {
-          const value = bigNumberify(allocation[0]).add(allocation[1]).toHexString();
-          await nitro.deposit(getChannelID(channel), { value });
+        const value = bigNumberify(allocation[0])
+          .add(allocation[1])
+          .toHexString();
+        await nitro.deposit(getChannelID(channel), { value });
 
-          const allocationOutcome = {
-            destination: [alice.address, bob.address],
-            allocation,
-            finalizedAt: ethers.utils.bigNumberify(1),
-            challengeCommitment: getEthersObjectForCommitment(commitment0),
-            guaranteedChannel: ZERO_ADDRESS,
-          };
-          const tx = await nitro.setOutcome(getChannelID(channel), allocationOutcome);
-          await tx.wait();
-          const transferAmount = bigNumberify(allocation[0]).add(1).toHexString();
-          expect.assertions(expectedAssertions);
-          await expectRevert(
-            () => nitro.transfer(getChannelID(channel), alice.address, transferAmount),
-            'Transfer: transfer too large',
-          );
-
-        });
+        const allocationOutcome = {
+          destination: [alice.address, bob.address],
+          allocation,
+          finalizedAt: ethers.utils.bigNumberify(1),
+          challengeCommitment: getEthersObjectForCommitment(commitment0),
+          guaranteedChannel: ZERO_ADDRESS,
+        };
+        const tx = await nitro.setOutcome(getChannelID(channel), allocationOutcome);
+        await tx.wait();
+        const transferAmount = bigNumberify(allocation[0])
+          .add(1)
+          .toHexString();
+        expect.assertions(expectedAssertions);
+        await expectRevert(
+          () => nitro.transfer(getChannelID(channel), alice.address, transferAmount),
+          'Transfer: transfer too large',
+        );
+      });
 
       it('reverts when the destination is not in outcome.destination', async () => {
-        const value = bigNumberify(allocation[0]).add(allocation[1]).toHexString();
+        const value = bigNumberify(allocation[0])
+          .add(allocation[1])
+          .toHexString();
         await nitro.deposit(getChannelID(channel), { value });
 
         const allocationOutcome = {
@@ -454,11 +466,12 @@ describe('nitroAdjudicator', () => {
           () => nitro.transfer(getChannelID(channel), aliceDest.address, allocation[0]),
           'Transfer: transfer too large',
         );
-
       });
 
       it('reverts when finalizedAt is 0', async () => {
-        const value = bigNumberify(allocation[0]).add(allocation[1]).toHexString();
+        const value = bigNumberify(allocation[0])
+          .add(allocation[1])
+          .toHexString();
         await nitro.deposit(getChannelID(channel), { value });
 
         const allocationOutcome = {
@@ -476,7 +489,6 @@ describe('nitroAdjudicator', () => {
           () => nitro.transfer(getChannelID(channel), alice.address, allocation[0]),
           'Transfer: outcome must be present',
         );
-
       });
     });
 
@@ -501,8 +513,12 @@ describe('nitroAdjudicator', () => {
         await (await nitro.setOutcome(guarantor.address, guarantee)).wait();
         await (await nitro.setOutcome(getChannelID(channel), allocationOutcome)).wait();
 
-        expect(getOutcomeFromParameters(await nitro.getOutcome(getChannelID(channel)))).toMatchObject(allocationOutcome);
-        expect(getOutcomeFromParameters(await nitro.getOutcome(guarantor.address))).toMatchObject(guarantee);
+        expect(
+          getOutcomeFromParameters(await nitro.getOutcome(getChannelID(channel))),
+        ).toMatchObject(allocationOutcome);
+        expect(getOutcomeFromParameters(await nitro.getOutcome(guarantor.address))).toMatchObject(
+          guarantee,
+        );
 
         let startBal = 5;
         const claimAmount = 2;
@@ -512,7 +528,9 @@ describe('nitroAdjudicator', () => {
         // ensure that the guarantor has at least 5 in holdings
         startBal = await nitro.holdings(guarantor.address);
         const startBalRecipient = (await nitro.holdings(recipient)).toNumber();
-        const bAllocation = bigNumberify(bBal).sub(claimAmount).toHexString();
+        const bAllocation = bigNumberify(bBal)
+          .sub(claimAmount)
+          .toHexString();
         const allocationAfterClaim = [aBal, bAllocation];
         const expectedOutcome = {
           destination: [alice.address, bob.address],
@@ -563,7 +581,7 @@ describe('nitroAdjudicator', () => {
         );
       });
 
-      it('reverts if the recipient channel\'s outcome is not finalized', async () => {
+      it("reverts if the recipient channel's outcome is not finalized", async () => {
         const recipient = bob.address;
         const guarantee = {
           destination: [bob.address, alice.address],
@@ -631,7 +649,9 @@ describe('nitroAdjudicator', () => {
           guaranteedChannel: ZERO_ADDRESS,
         };
         const funding = aBal;
-        expect((await nitro.overlapPub(recipient, outcome, funding)).toHexString()).toEqual(funding);
+        expect((await nitro.overlapPub(recipient, outcome, funding)).toHexString()).toEqual(
+          funding,
+        );
       });
 
       it('returns the allocated amount when funding is greater than the amount allocated to the recipient in the outcome', async () => {
@@ -643,7 +663,9 @@ describe('nitroAdjudicator', () => {
           challengeCommitment: getEthersObjectForCommitment(commitment0),
           guaranteedChannel: ZERO_ADDRESS,
         };
-        const funding = bigNumberify(aBal).add(1).toHexString();
+        const funding = bigNumberify(aBal)
+          .add(1)
+          .toHexString();
         expect((await nitro.overlapPub(recipient, outcome, funding)).toHexString()).toEqual(aBal);
       });
 
@@ -656,7 +678,9 @@ describe('nitroAdjudicator', () => {
           challengeCommitment: getEthersObjectForCommitment(commitment0),
           guaranteedChannel: ZERO_ADDRESS,
         };
-        const funding = bigNumberify(aBal).add(1).toHexString();
+        const funding = bigNumberify(aBal)
+          .add(1)
+          .toHexString();
         const zero = ethers.utils.bigNumberify(0);
         expect(await nitro.overlapPub(recipient, outcome, funding)).toEqual(zero);
       });
@@ -672,7 +696,9 @@ describe('nitroAdjudicator', () => {
           guaranteedChannel: ZERO_ADDRESS,
         };
         const removeAmount = 2;
-        const expectedBAllocation = bigNumberify(bBal).sub(removeAmount).toHexString();
+        const expectedBAllocation = bigNumberify(bBal)
+          .sub(removeAmount)
+          .toHexString();
         const allocationAfterRemove = [aBal, expectedBAllocation];
 
         const expectedOutcome = {
@@ -682,7 +708,6 @@ describe('nitroAdjudicator', () => {
           challengeCommitment: getEthersObjectForCommitment(commitment0),
         };
 
-
         const recipient = bob.address;
         const newOutcome = await nitro.removePub(outcome, recipient, removeAmount);
 
@@ -691,7 +716,7 @@ describe('nitroAdjudicator', () => {
     });
 
     describe('reprioritize', () => {
-      it('works when the guarantee destination length matches the allocation outcome\'s allocation length', async () => {
+      it("works when the guarantee destination length matches the allocation outcome's allocation length", async () => {
         const allocationOutcome = {
           destination: [alice.address, bob.address],
           allocation,
@@ -722,7 +747,7 @@ describe('nitroAdjudicator', () => {
         expect(getOutcomeFromParameters(newOutcome)).toMatchObject(expectedOutcome);
       });
 
-      it('works when the guarantee destination length is less than the allocation outcome\'s allocation length', async () => {
+      it("works when the guarantee destination length is less than the allocation outcome's allocation length", async () => {
         const allocationOutcome = {
           destination: [alice.address, bob.address],
           allocation,
@@ -752,9 +777,7 @@ describe('nitroAdjudicator', () => {
 
         expect(getOutcomeFromParameters(newOutcome)).toMatchObject(expectedOutcome);
       });
-
     });
-
   });
 
   describe('ForceMove Protocol', () => {
@@ -772,39 +795,58 @@ describe('nitroAdjudicator', () => {
       await (await nitro.setOutcome(getChannelID(channel), nullOutcome)).wait();
       // challenge doesn't exist at start of app
       expectedAssertions += 1;
-      expect(
-        await nitro.isChannelClosedPub(getChannelID(channel))
-      ).toBe(false);
+      expect(await nitro.isChannelClosedPub(getChannelID(channel))).toBe(false);
     });
 
     describe('concludeAndWithdraw', () => {
       it('works when the channel is not concluded', async () => {
         const total = bigNumberify(aBal).add(bBal);
-          const channelId = getChannelID(channel);
+        const channelId = getChannelID(channel);
         await depositTo(channelId, total.toNumber());
         const startBal = await provider.getBalance(aliceDest.address);
         const allocatedAtStart = await nitro.holdings(channelId);
         const participant = alice.address;
         const destination = aliceDest.address;
-        const { destination: startDestination, allocation: startAllocation, challengeCommitment: startCommitment, finalizedAt, guaranteedChannel } = await nitro.getOutcome(getChannelID(channel));
-        expect({ destination: startDestination, allocation: startAllocation, challengeCommitment: startCommitment, finalizedAt, guaranteedChannel }).toMatchObject(nullOutcome);
+        const {
+          destination: startDestination,
+          allocation: startAllocation,
+          challengeCommitment: startCommitment,
+          finalizedAt,
+          guaranteedChannel,
+        } = await nitro.getOutcome(getChannelID(channel));
+        expect({
+          destination: startDestination,
+          allocation: startAllocation,
+          challengeCommitment: startCommitment,
+          finalizedAt,
+          guaranteedChannel,
+        }).toMatchObject(nullOutcome);
 
         const senderAddr = await nitro.signer.getAddress();
-        const authorization = abiCoder.encode(AUTH_TYPES, [participant, destination, aBal, senderAddr]);
+        const authorization = abiCoder.encode(AUTH_TYPES, [
+          participant,
+          destination,
+          aBal,
+          senderAddr,
+        ]);
 
         const sig = sign(authorization, alice.privateKey);
 
-        const tx = await nitro.concludeAndWithdraw(conclusionProof,
+        const tx = await nitro.concludeAndWithdraw(
+          conclusionProof,
           alice.address,
           destination,
           aBal,
           sig.v,
           sig.r,
           sig.s,
-          { gasLimit: 3000000 });
+          { gasLimit: 3000000 },
+        );
         await tx.wait();
         const outcomeAfterConclude = await nitro.getOutcome(getChannelID(channel));
-        expect(asEthersObject(fromParameters(outcomeAfterConclude.challengeCommitment))).toMatchObject(conclusionProof.penultimateCommitment);
+        expect(
+          asEthersObject(fromParameters(outcomeAfterConclude.challengeCommitment)),
+        ).toMatchObject(conclusionProof.penultimateCommitment);
         expect(Number(await provider.getBalance(aliceDest.address))).toEqual(
           Number(startBal.add(aBal)),
         );
@@ -818,28 +860,37 @@ describe('nitroAdjudicator', () => {
         await depositTo(channelId, total.toNumber());
         const concludeTx = await nitro.conclude(conclusionProof);
         await concludeTx.wait();
-        
+
         const participant = alice.address;
         const destination = aliceDest.address;
         const senderAddr = await nitro.signer.getAddress();
-        const authorization = abiCoder.encode(AUTH_TYPES, [participant, destination, aBal, senderAddr]);
+        const authorization = abiCoder.encode(AUTH_TYPES, [
+          participant,
+          destination,
+          aBal,
+          senderAddr,
+        ]);
 
         const sig = sign(authorization, alice.privateKey);
 
         const startBal = await provider.getBalance(aliceDest.address);
         const allocatedAtStart = await nitro.holdings(channelId);
 
-        const tx = await nitro.concludeAndWithdraw(conclusionProof,
+        const tx = await nitro.concludeAndWithdraw(
+          conclusionProof,
           alice.address,
           destination,
           aBal,
           sig.v,
           sig.r,
           sig.s,
-          { gasLimit: 3000000 });
+          { gasLimit: 3000000 },
+        );
         await tx.wait();
         const outcomeAfterConclude = await nitro.getOutcome(channelId);
-        expect(asEthersObject(fromParameters(outcomeAfterConclude.challengeCommitment))).toMatchObject(conclusionProof.penultimateCommitment);
+        expect(
+          asEthersObject(fromParameters(outcomeAfterConclude.challengeCommitment)),
+        ).toMatchObject(conclusionProof.penultimateCommitment);
         expect(Number(await provider.getBalance(aliceDest.address))).toEqual(
           Number(startBal.add(aBal)),
         );
@@ -848,7 +899,6 @@ describe('nitroAdjudicator', () => {
         );
       });
       it('reverts if it has already been concluded with a different proof', async () => {
-
         await depositTo(alice.address);
         const allocationOutcome = {
           destination: [alice.address, bob.address],
@@ -864,38 +914,63 @@ describe('nitroAdjudicator', () => {
         const destination = aliceDest.address;
 
         const senderAddr = await nitro.signer.getAddress();
-        const authorization = abiCoder.encode(AUTH_TYPES, [participant, destination, aBal, senderAddr]);
+        const authorization = abiCoder.encode(AUTH_TYPES, [
+          participant,
+          destination,
+          aBal,
+          senderAddr,
+        ]);
         const sig = sign(authorization, alice.privateKey);
         expect.assertions(expectedAssertions);
         await expectRevert(
-          () => nitro.concludeAndWithdraw(conclusionProof,
-            alice.address,
-            destination,
-            aBal,
-            sig.v,
-            sig.r,
-            sig.s,
-            { gasLimit: 3000000 }),
-          "concludeAndWithdraw: channel already concluded with a different proof"
+          () =>
+            nitro.concludeAndWithdraw(
+              conclusionProof,
+              alice.address,
+              destination,
+              aBal,
+              sig.v,
+              sig.r,
+              sig.s,
+              { gasLimit: 3000000 },
+            ),
+          'concludeAndWithdraw: channel already concluded with a different proof',
         );
       });
     });
 
     describe('conclude', () => {
       it('works when the conclusion proof is valid', async () => {
-        const { destination: startDestination, allocation: startAllocation, challengeCommitment: startCommitment, finalizedAt, guaranteedChannel } = await nitro.getOutcome(getChannelID(channel));
-        expect({ destination: startDestination, allocation: startAllocation, challengeCommitment: startCommitment, finalizedAt, guaranteedChannel }).toMatchObject(nullOutcome);
+        const {
+          destination: startDestination,
+          allocation: startAllocation,
+          challengeCommitment: startCommitment,
+          finalizedAt,
+          guaranteedChannel,
+        } = await nitro.getOutcome(getChannelID(channel));
+        expect({
+          destination: startDestination,
+          allocation: startAllocation,
+          challengeCommitment: startCommitment,
+          finalizedAt,
+          guaranteedChannel,
+        }).toMatchObject(nullOutcome);
 
         const tx = await nitro.conclude(conclusionProof);
         await tx.wait();
 
-        const { destination: endDestination, allocation: endAllocation, challengeCommitment } = await nitro.getOutcome(getChannelID(channel));
+        const {
+          destination: endDestination,
+          allocation: endAllocation,
+          challengeCommitment,
+        } = await nitro.getOutcome(getChannelID(channel));
 
         expect(endDestination).toEqual([alice.address, bob.address]);
         expect(endAllocation.map(a => a.toHexString())).toEqual(allocation);
-        expect(asEthersObject(fromParameters(challengeCommitment))).toMatchObject(conclusionProof.penultimateCommitment);
+        expect(asEthersObject(fromParameters(challengeCommitment))).toMatchObject(
+          conclusionProof.penultimateCommitment,
+        );
         // TODO: figure out how to test finalizedAt
-
       });
 
       it('reverts if it has already been concluded', async () => {
@@ -905,7 +980,7 @@ describe('nitroAdjudicator', () => {
         expect.assertions(expectedAssertions);
         await expectRevert(
           () => nitro.conclude(conclusionProof),
-          "Conclude: channel must not be finalized"
+          'Conclude: channel must not be finalized',
         );
       });
     });
@@ -915,12 +990,15 @@ describe('nitroAdjudicator', () => {
         const agreedCommitment = commitment0;
         const challengeCommitment = commitment1;
 
-        const { r: r0, s: s0, v: v0 } = sign(getHexForCommitment(agreedCommitment), challengee.privateKey);
-        const { r: r1, s: s1, v: v1 } = sign(getHexForCommitment(challengeCommitment), challenger.privateKey);
-        const signatures = [
-          { r: r0, s: s0, v: v0 },
-          { r: r1, s: s1, v: v1 }
-        ];
+        const { r: r0, s: s0, v: v0 } = sign(
+          getHexForCommitment(agreedCommitment),
+          challengee.privateKey,
+        );
+        const { r: r1, s: s1, v: v1 } = sign(
+          getHexForCommitment(challengeCommitment),
+          challenger.privateKey,
+        );
+        const signatures = [{ r: r0, s: s0, v: v0 }, { r: r1, s: s1, v: v1 }];
 
         expectedAssertions += 1;
         expect(await nitro.outcomeFinal(getChannelID(channel))).toBe(false);
@@ -946,12 +1024,15 @@ describe('nitroAdjudicator', () => {
         const agreedCommitment = commitment0;
         const challengeCommitment = commitment3;
 
-        const { r: r0, s: s0, v: v0 } = sign(getHexForCommitment(agreedCommitment), challengee.privateKey);
-        const { r: r1, s: s1, v: v1 } = sign(getHexForCommitment(challengeCommitment), challenger.privateKey);
-        const signatures = [
-          { r: r0, s: s0, v: v0 },
-          { r: r1, s: s1, v: v1 }
-        ];
+        const { r: r0, s: s0, v: v0 } = sign(
+          getHexForCommitment(agreedCommitment),
+          challengee.privateKey,
+        );
+        const { r: r1, s: s1, v: v1 } = sign(
+          getHexForCommitment(challengeCommitment),
+          challenger.privateKey,
+        );
+        const signatures = [{ r: r0, s: s0, v: v0 }, { r: r1, s: s1, v: v1 }];
 
         expectedAssertions += 1;
         expect(await nitro.outcomeFinal(getChannelID(channel))).toBe(false);
@@ -963,22 +1044,22 @@ describe('nitroAdjudicator', () => {
           signatures,
         );
         expect.assertions(expectedAssertions);
-        await expectRevert(
-          () => tx,
-          "Invalid transition: turnNum must increase by 1"
-        );
+        await expectRevert(() => tx, 'Invalid transition: turnNum must increase by 1');
       });
 
       it('reverts when the commitments are not signed', async () => {
         const agreedCommitment = commitment0;
         const challengeCommitment = commitment1;
 
-        const { r: r0, s: s0, v: v0 } = sign(getHexForCommitment(agreedCommitment), challengee.privateKey);
-        const { r: r1, s: s1, v: v1 } = sign(getHexForCommitment(commitment3), challenger.privateKey);
-        const signatures = [
-          { r: r0, s: s0, v: v0 },
-          { r: r1, s: s1, v: v1 }
-        ];
+        const { r: r0, s: s0, v: v0 } = sign(
+          getHexForCommitment(agreedCommitment),
+          challengee.privateKey,
+        );
+        const { r: r1, s: s1, v: v1 } = sign(
+          getHexForCommitment(commitment3),
+          challenger.privateKey,
+        );
+        const signatures = [{ r: r0, s: s0, v: v0 }, { r: r1, s: s1, v: v1 }];
 
         expectedAssertions += 1;
         expect(await nitro.outcomeFinal(getChannelID(channel))).toBe(false);
@@ -990,22 +1071,22 @@ describe('nitroAdjudicator', () => {
           signatures,
         );
         expect.assertions(expectedAssertions);
-        await expectRevert(
-          () => tx,
-          "ForceMove: challengeCommitment not authorized"
-        );
+        await expectRevert(() => tx, 'ForceMove: challengeCommitment not authorized');
       });
 
       it('reverts when the channel is closed', async () => {
         const agreedCommitment = commitment0;
         const challengeCommitment = commitment1;
 
-        const { r: r0, s: s0, v: v0 } = sign(getHexForCommitment(agreedCommitment), challengee.privateKey);
-        const { r: r1, s: s1, v: v1 } = sign(getHexForCommitment(challengeCommitment), challenger.privateKey);
-        const signatures = [
-          { r: r0, s: s0, v: v0 },
-          { r: r1, s: s1, v: v1 }
-        ];
+        const { r: r0, s: s0, v: v0 } = sign(
+          getHexForCommitment(agreedCommitment),
+          challengee.privateKey,
+        );
+        const { r: r1, s: s1, v: v1 } = sign(
+          getHexForCommitment(challengeCommitment),
+          challenger.privateKey,
+        );
+        const signatures = [{ r: r0, s: s0, v: v0 }, { r: r1, s: s1, v: v1 }];
 
         const allocationOutcome = {
           destination: [alice.address, bob.address],
@@ -1025,10 +1106,7 @@ describe('nitroAdjudicator', () => {
           signatures,
         );
         expect.assertions(expectedAssertions);
-        await expectRevert(
-          () => tx,
-          "ForceMove: channel must be open"
-        );
+        await expectRevert(() => tx, 'ForceMove: channel must be open');
       });
     });
 
@@ -1043,9 +1121,7 @@ describe('nitroAdjudicator', () => {
         await (await nitro.setOutcome(getChannelID(channel), nullOutcome)).wait();
         // challenge doesn't exist at start of app
         expectedAssertions += 1;
-        expect(
-          await nitro.isChannelClosedPub(getChannelID(channel))
-        ).toBe(false);
+        expect(await nitro.isChannelClosedPub(getChannelID(channel))).toBe(false);
 
         await nitro.forceMove(
           getEthersObjectForCommitment(agreedCommitment),
@@ -1076,14 +1152,20 @@ describe('nitroAdjudicator', () => {
         challengeCommitment = commitment1;
         refutationCommitment = commitment3;
 
-        const { r: r0, s: s0, v: v0 } = sign(getHexForCommitment(agreedCommitment), challengee.privateKey);
-        const { r: r1, s: s1, v: v1 } = sign(getHexForCommitment(challengeCommitment), challenger.privateKey);
-        signatures = [
-          { r: r0, s: s0, v: v0 },
-          { r: r1, s: s1, v: v1 },
-        ];
+        const { r: r0, s: s0, v: v0 } = sign(
+          getHexForCommitment(agreedCommitment),
+          challengee.privateKey,
+        );
+        const { r: r1, s: s1, v: v1 } = sign(
+          getHexForCommitment(challengeCommitment),
+          challenger.privateKey,
+        );
+        signatures = [{ r: r0, s: s0, v: v0 }, { r: r1, s: s1, v: v1 }];
 
-        const { r: r2, s: s2, v: v2 } = sign(getHexForCommitment(refutationCommitment), challenger.privateKey);
+        const { r: r2, s: s2, v: v2 } = sign(
+          getHexForCommitment(refutationCommitment),
+          challenger.privateKey,
+        );
         refutationSignature = { r: r2, s: s2, v: v2 };
       });
 
@@ -1093,14 +1175,13 @@ describe('nitroAdjudicator', () => {
         // expired challenge exists at start of app
         await increaseTime(DURATION.days(2), provider);
         expectedAssertions += 1;
-        expect(
-          await nitro.isChannelClosedPub(getChannelID(channel))
-        ).toBe(true);
+        expect(await nitro.isChannelClosedPub(getChannelID(channel))).toBe(true);
 
         expect.assertions(expectedAssertions);
         await expectRevert(
-          () => nitro.refute(getEthersObjectForCommitment(refutationCommitment), refutationSignature),
-          "Refute: channel must be open"
+          () =>
+            nitro.refute(getEthersObjectForCommitment(refutationCommitment), refutationSignature),
+          'Refute: channel must be open',
         );
       });
 
@@ -1110,7 +1191,7 @@ describe('nitroAdjudicator', () => {
         expect.assertions(expectedAssertions);
         await expectRevert(
           () => nitro.refute(getEthersObjectForCommitment(refutationCommitment), signatures[0]),
-          "Refute: move must be authorized"
+          'Refute: move must be authorized',
         );
       });
 
@@ -1120,13 +1201,20 @@ describe('nitroAdjudicator', () => {
         const invalidRefutationCommitment = commitment3;
         invalidRefutationCommitment.turnNum = agreedCommitment.turnNum - 1;
 
-        const { r: r3, s: s3, v: v3 } = sign(getHexForCommitment(invalidRefutationCommitment), challenger.privateKey);
+        const { r: r3, s: s3, v: v3 } = sign(
+          getHexForCommitment(invalidRefutationCommitment),
+          challenger.privateKey,
+        );
         const invalidRefutationSignature = { r: r3, s: s3, v: v3 };
 
         expect.assertions(expectedAssertions);
         await expectRevert(
-          () => nitro.refute(getEthersObjectForCommitment(invalidRefutationCommitment), invalidRefutationSignature),
-          "the refutationCommitment must have a higher nonce"
+          () =>
+            nitro.refute(
+              getEthersObjectForCommitment(invalidRefutationCommitment),
+              invalidRefutationSignature,
+            ),
+          'the refutationCommitment must have a higher nonce',
         );
       });
     });
@@ -1144,14 +1232,20 @@ describe('nitroAdjudicator', () => {
         challengeCommitment = commitment1;
         responseCommitment = commitment2;
 
-        const { r: r0, s: s0, v: v0 } = sign(getHexForCommitment(agreedCommitment), challengee.privateKey);
-        const { r: r1, s: s1, v: v1 } = sign(getHexForCommitment(challengeCommitment), challenger.privateKey);
-        signatures = [
-          { r: r0, s: s0, v: v0 },
-          { r: r1, s: s1, v: v1 },
-        ];
+        const { r: r0, s: s0, v: v0 } = sign(
+          getHexForCommitment(agreedCommitment),
+          challengee.privateKey,
+        );
+        const { r: r1, s: s1, v: v1 } = sign(
+          getHexForCommitment(challengeCommitment),
+          challenger.privateKey,
+        );
+        signatures = [{ r: r0, s: s0, v: v0 }, { r: r1, s: s1, v: v1 }];
 
-        const { r: r2, s: s2, v: v2 } = sign(getHexForCommitment(responseCommitment), challengee.privateKey);
+        const { r: r2, s: s2, v: v2 } = sign(
+          getHexForCommitment(responseCommitment),
+          challengee.privateKey,
+        );
         responseSignature = { r: r2, s: s2, v: v2 };
       });
 
@@ -1159,9 +1253,7 @@ describe('nitroAdjudicator', () => {
         await (await nitro.setOutcome(getChannelID(channel), nullOutcome)).wait();
         // challenge doesn't exist at start of app
         expectedAssertions += 1;
-        expect(
-          await nitro.isChannelClosedPub(getChannelID(channel))
-        ).toBe(false);
+        expect(await nitro.isChannelClosedPub(getChannelID(channel))).toBe(false);
 
         await nitro.forceMove(
           getEthersObjectForCommitment(agreedCommitment),
@@ -1178,7 +1270,10 @@ describe('nitroAdjudicator', () => {
         await runBeforeRespond();
 
         const { emitterWitness, eventPromise } = expectEvent(nitro, 'RespondedWithMove');
-        await nitro.respondWithMove(getEthersObjectForCommitment(responseCommitment), responseSignature);
+        await nitro.respondWithMove(
+          getEthersObjectForCommitment(responseCommitment),
+          responseSignature,
+        );
 
         await eventPromise;
         expect(emitterWitness).toBeCalled();
@@ -1193,14 +1288,16 @@ describe('nitroAdjudicator', () => {
         // expired challenge exists at start of app
         await increaseTime(DURATION.days(2), provider);
         expectedAssertions += 1;
-        expect(
-          await nitro.isChannelClosedPub(getChannelID(channel))
-        ).toBe(true);
+        expect(await nitro.isChannelClosedPub(getChannelID(channel))).toBe(true);
 
         expect.assertions(expectedAssertions);
         await expectRevert(
-          () => nitro.respondWithMove(getEthersObjectForCommitment(responseCommitment), responseSignature),
-          "RespondWithMove: channel must be open"
+          () =>
+            nitro.respondWithMove(
+              getEthersObjectForCommitment(responseCommitment),
+              responseSignature,
+            ),
+          'RespondWithMove: channel must be open',
         );
       });
 
@@ -1209,8 +1306,9 @@ describe('nitroAdjudicator', () => {
 
         expect.assertions(expectedAssertions);
         await expectRevert(
-          () => nitro.respondWithMove(getEthersObjectForCommitment(responseCommitment), signatures[0]),
-          "RespondWithMove: move must be authorized"
+          () =>
+            nitro.respondWithMove(getEthersObjectForCommitment(responseCommitment), signatures[0]),
+          'RespondWithMove: move must be authorized',
         );
       });
 
@@ -1219,13 +1317,20 @@ describe('nitroAdjudicator', () => {
 
         const invalidResponseCommitment = commitment3;
 
-        const { r: r3, s: s3, v: v3 } = sign(getHexForCommitment(invalidResponseCommitment), challenger.privateKey);
+        const { r: r3, s: s3, v: v3 } = sign(
+          getHexForCommitment(invalidResponseCommitment),
+          challenger.privateKey,
+        );
         const invalidResponseSignature = { r: r3, s: s3, v: v3 };
 
         expect.assertions(expectedAssertions);
         await expectRevert(
-          () => nitro.respondWithMove(getEthersObjectForCommitment(invalidResponseCommitment), invalidResponseSignature),
-          "Invalid transition: turnNum must increase by 1"
+          () =>
+            nitro.respondWithMove(
+              getEthersObjectForCommitment(invalidResponseCommitment),
+              invalidResponseSignature,
+            ),
+          'Invalid transition: turnNum must increase by 1',
         );
       });
     });
@@ -1246,15 +1351,24 @@ describe('nitroAdjudicator', () => {
         alternativeCommitment = commitment1alt;
         responseCommitment = commitment2alt;
 
-        const { r: r0, s: s0, v: v0 } = sign(getHexForCommitment(agreedCommitment), challengee.privateKey);
-        const { r: r1, s: s1, v: v1 } = sign(getHexForCommitment(challengeCommitment), challenger.privateKey);
-        signatures = [
-          { r: r0, s: s0, v: v0 },
-          { r: r1, s: s1, v: v1 },
-        ];
+        const { r: r0, s: s0, v: v0 } = sign(
+          getHexForCommitment(agreedCommitment),
+          challengee.privateKey,
+        );
+        const { r: r1, s: s1, v: v1 } = sign(
+          getHexForCommitment(challengeCommitment),
+          challenger.privateKey,
+        );
+        signatures = [{ r: r0, s: s0, v: v0 }, { r: r1, s: s1, v: v1 }];
 
-        const { r: r2, s: s2, v: v2 } = sign(getHexForCommitment(alternativeCommitment), challenger.privateKey);
-        const { r: r3, s: s3, v: v3 } = sign(getHexForCommitment(responseCommitment), challengee.privateKey);
+        const { r: r2, s: s2, v: v2 } = sign(
+          getHexForCommitment(alternativeCommitment),
+          challenger.privateKey,
+        );
+        const { r: r3, s: s3, v: v3 } = sign(
+          getHexForCommitment(responseCommitment),
+          challengee.privateKey,
+        );
 
         alternativeSignature = { r: r2, s: s2, v: v2 };
         responseSignature = { r: r3, s: s3, v: v3 };
@@ -1264,9 +1378,7 @@ describe('nitroAdjudicator', () => {
         await (await nitro.setOutcome(getChannelID(channel), nullOutcome)).wait();
         // challenge doesn't exist at start of app
         expectedAssertions += 1;
-        expect(
-          await nitro.isChannelClosedPub(getChannelID(channel))
-        ).toBe(false);
+        expect(await nitro.isChannelClosedPub(getChannelID(channel))).toBe(false);
 
         await nitro.forceMove(
           getEthersObjectForCommitment(agreedCommitment),
@@ -1283,7 +1395,12 @@ describe('nitroAdjudicator', () => {
         await runBeforeAlternativeRespond();
 
         const { emitterWitness, eventPromise } = expectEvent(nitro, 'RespondedWithAlternativeMove');
-        await nitro.alternativeRespondWithMove(getEthersObjectForCommitment(alternativeCommitment), getEthersObjectForCommitment(responseCommitment), alternativeSignature, responseSignature);
+        await nitro.alternativeRespondWithMove(
+          getEthersObjectForCommitment(alternativeCommitment),
+          getEthersObjectForCommitment(responseCommitment),
+          alternativeSignature,
+          responseSignature,
+        );
 
         await eventPromise;
         expect(emitterWitness).toBeCalled();
@@ -1298,14 +1415,18 @@ describe('nitroAdjudicator', () => {
         // expired challenge exists at start of app
         await increaseTime(DURATION.days(2), provider);
         expectedAssertions += 1;
-        expect(
-          await nitro.isChannelClosedPub(getChannelID(channel))
-        ).toBe(true);
+        expect(await nitro.isChannelClosedPub(getChannelID(channel))).toBe(true);
 
         expect.assertions(expectedAssertions);
         await expectRevert(
-          () => nitro.alternativeRespondWithMove(getEthersObjectForCommitment(alternativeCommitment), getEthersObjectForCommitment(responseCommitment), alternativeSignature, responseSignature),
-          "AlternativeRespondWithMove: channel must be open"
+          () =>
+            nitro.alternativeRespondWithMove(
+              getEthersObjectForCommitment(alternativeCommitment),
+              getEthersObjectForCommitment(responseCommitment),
+              alternativeSignature,
+              responseSignature,
+            ),
+          'AlternativeRespondWithMove: channel must be open',
         );
       });
 
@@ -1314,8 +1435,14 @@ describe('nitroAdjudicator', () => {
 
         expect.assertions(expectedAssertions);
         await expectRevert(
-          () => nitro.alternativeRespondWithMove(getEthersObjectForCommitment(alternativeCommitment), getEthersObjectForCommitment(responseCommitment), alternativeSignature, alternativeSignature),
-          "AlternativeRespondWithMove: move must be authorized"
+          () =>
+            nitro.alternativeRespondWithMove(
+              getEthersObjectForCommitment(alternativeCommitment),
+              getEthersObjectForCommitment(responseCommitment),
+              alternativeSignature,
+              alternativeSignature,
+            ),
+          'AlternativeRespondWithMove: move must be authorized',
         );
       });
 
@@ -1324,13 +1451,22 @@ describe('nitroAdjudicator', () => {
 
         const invalidResponseCommitment = commitment3;
 
-        const { r: r3, s: s3, v: v3 } = sign(getHexForCommitment(invalidResponseCommitment), challenger.privateKey);
+        const { r: r3, s: s3, v: v3 } = sign(
+          getHexForCommitment(invalidResponseCommitment),
+          challenger.privateKey,
+        );
         const invalidResponseSignature = { r: r3, s: s3, v: v3 };
 
         expect.assertions(expectedAssertions);
         await expectRevert(
-          () => nitro.alternativeRespondWithMove(getEthersObjectForCommitment(alternativeCommitment), getEthersObjectForCommitment(invalidResponseCommitment), alternativeSignature, invalidResponseSignature),
-          "Invalid transition: turnNum must increase by 1"
+          () =>
+            nitro.alternativeRespondWithMove(
+              getEthersObjectForCommitment(alternativeCommitment),
+              getEthersObjectForCommitment(invalidResponseCommitment),
+              alternativeSignature,
+              invalidResponseSignature,
+            ),
+          'Invalid transition: turnNum must increase by 1',
         );
       });
 
@@ -1340,15 +1476,27 @@ describe('nitroAdjudicator', () => {
         const invalidAlternativeCommitment = commitment0;
         const invalidResponseCommitment = commitment1;
 
-        const { r: r3, s: s3, v: v3 } = sign(getHexForCommitment(invalidAlternativeCommitment), challenger.privateKey);
+        const { r: r3, s: s3, v: v3 } = sign(
+          getHexForCommitment(invalidAlternativeCommitment),
+          challenger.privateKey,
+        );
         const invalidAlternativeSignature = { r: r3, s: s3, v: v3 };
-        const { r: r4, s: s4, v: v4 } = sign(getHexForCommitment(invalidResponseCommitment), challenger.privateKey);
+        const { r: r4, s: s4, v: v4 } = sign(
+          getHexForCommitment(invalidResponseCommitment),
+          challenger.privateKey,
+        );
         const invalidResponseSignature = { r: r4, s: s4, v: v4 };
 
         expect.assertions(expectedAssertions);
         await expectRevert(
-          () => nitro.alternativeRespondWithMove(getEthersObjectForCommitment(invalidAlternativeCommitment), getEthersObjectForCommitment(invalidResponseCommitment), invalidAlternativeSignature, invalidResponseSignature),
-          "alternativeCommitment must have the same nonce as the challenge commitment"
+          () =>
+            nitro.alternativeRespondWithMove(
+              getEthersObjectForCommitment(invalidAlternativeCommitment),
+              getEthersObjectForCommitment(invalidResponseCommitment),
+              invalidAlternativeSignature,
+              invalidResponseSignature,
+            ),
+          'alternativeCommitment must have the same nonce as the challenge commitment',
         );
       });
     });
