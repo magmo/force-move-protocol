@@ -1,4 +1,12 @@
-import { CommitmentType, Uint32, Uint256, Address, Bytes, BaseCommitment, ethereumArgs } from 'fmg-core';
+import {
+  CommitmentType,
+  Uint32,
+  Uint256,
+  Address,
+  Bytes,
+  BaseCommitment,
+  Commitment,
+} from 'fmg-core';
 import abi from 'web3-eth-abi';
 import { bigNumberify } from 'ethers/utils';
 
@@ -8,26 +16,59 @@ export interface AppAttributes {
   proposedDestination: Address[];
 }
 
-interface ConsensusBaseCommitment extends BaseCommitment {
-  consensusCounter: Uint32;
-  proposedAllocation: Uint256[];
-  proposedDestination: Address[];
+interface ConsensusCommitment extends BaseCommitment {
+  appAttributes: AppAttributes;
 }
 
-function preFundSetupCommitment(opts: ConsensusBaseCommitment) {
-  return { ...opts, commitmentType: CommitmentType.PreFundSetup, appAttributes: bytesFromAppAttributes(opts) };
+export function asCoreCommitment(commitment: ConsensusCommitment) {
+  return {
+    ...commitment,
+    appAttributes: bytesFromAppAttributes(commitment.appAttributes),
+  };
 }
 
-function postFundSetupCommitment(opts: ConsensusBaseCommitment) {
-  return { ...opts, commitmentType: CommitmentType.PostFundSetup, appAttributes: bytesFromAppAttributes(opts) };
+export function asConsensusCommitment(commitment: Commitment) {
+  return {
+    ...commitment,
+    appAttributes: appAttributesFromBytes(commitment.appAttributes),
+  };
 }
 
-function appCommitment(opts: ConsensusBaseCommitment) {
-  return { ...opts, commitmentType: CommitmentType.App, appAttributes: bytesFromAppAttributes(opts) };
+function baseAttributes(opts: BaseCommitment) {
+  const { channel, turnNum, allocation, destination, commitmentCount, commitmentType } = opts;
+  return { channel, turnNum, allocation, destination, commitmentCount, commitmentType };
 }
 
-function concludeCommitment(opts: ConsensusBaseCommitment) {
-  return { ...opts, commitmentType: CommitmentType.Conclude, appAttributes: bytesFromAppAttributes(opts) };
+function preFundSetupCommitment(opts: ConsensusCommitment) {
+  return {
+    ...baseAttributes(opts),
+    appAttributes: bytesFromAppAttributes(opts.appAttributes),
+    commitmentType: CommitmentType.PreFundSetup,
+  };
+}
+
+function postFundSetupCommitment(opts: ConsensusCommitment) {
+  return {
+    ...baseAttributes(opts),
+    commitmentType: CommitmentType.PostFundSetup,
+    appAttributes: bytesFromAppAttributes(opts.appAttributes),
+  };
+}
+
+function appCommitment(opts: ConsensusCommitment) {
+  return {
+    ...baseAttributes(opts),
+    commitmentType: CommitmentType.App,
+    appAttributes: bytesFromAppAttributes(opts.appAttributes),
+  };
+}
+
+function concludeCommitment(opts: ConsensusCommitment) {
+  return {
+    ...baseAttributes(opts),
+    commitmentType: CommitmentType.Conclude,
+    appAttributes: bytesFromAppAttributes(opts.appAttributes),
+  };
 }
 
 export const commitments = {
@@ -37,7 +78,9 @@ export const commitments = {
   concludeCommitment,
 };
 
-export function appAttributes(consensusCommitmentArgs: [string, string[], string[]]): AppAttributes {
+function appAttributesFromEthersArgs(
+  consensusCommitmentArgs: [string, string[], string[]],
+): AppAttributes {
   return {
     consensusCounter: parseInt(consensusCommitmentArgs[0], 10),
     proposedAllocation: consensusCommitmentArgs[1].map(bigNumberify).map(bn => bn.toHexString()),
@@ -46,17 +89,23 @@ export function appAttributes(consensusCommitmentArgs: [string, string[], string
 }
 
 const SolidityConsensusCommitmentType = {
-  "ConsensusCommitmentStruct": {
-    "consensusCounter": "uint32",
-    "proposedAllocation": "uint256[]",
-    "proposedDestination": "address[]",
+  ConsensusCommitmentStruct: {
+    consensusCounter: 'uint32',
+    proposedAllocation: 'uint256[]',
+    proposedDestination: 'address[]',
   },
 };
 
 export function bytesFromAppAttributes(appAttrs: AppAttributes): Bytes {
-  return abi.encodeParameter(SolidityConsensusCommitmentType, [appAttrs.consensusCounter, appAttrs.proposedAllocation, appAttrs.proposedDestination]);
+  return abi.encodeParameter(SolidityConsensusCommitmentType, [
+    appAttrs.consensusCounter,
+    appAttrs.proposedAllocation,
+    appAttrs.proposedDestination,
+  ]);
 }
 
 export function appAttributesFromBytes(appAttrs: Bytes): AppAttributes {
-  return appAttributes(abi.decodeParameter(SolidityConsensusCommitmentType, appAttrs));
+  return appAttributesFromEthersArgs(
+    abi.decodeParameter(SolidityConsensusCommitmentType, appAttrs),
+  );
 }
