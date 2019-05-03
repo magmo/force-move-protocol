@@ -12,8 +12,6 @@ contract ConsensusApp {
         ConsensusCommitment.ConsensusCommitmentStruct memory oldCommitment = ConsensusCommitment.fromFrameworkCommitment(_old);
         ConsensusCommitment.ConsensusCommitmentStruct memory newCommitment = ConsensusCommitment.fromFrameworkCommitment(_new);
 
-        uint numParticipants = _old.participants.length;
-
 // State machine transition identifier
 
         if (oldCommitment.updateType == ConsensusCommitment.UpdateType.Accord) {
@@ -60,11 +58,6 @@ contract ConsensusApp {
       require(encodeAndHashDestination(oldCommitment.proposedDestination) == encodeAndHashDestination(newCommitment.proposedDestination),"ConsensusApp:  'proposedDestination' must be the same between commitments."); 
         _;
     }
-
-    modifier totalAllocationConserved(ConsensusCommitment.ConsensusCommitmentStruct memory oldCommitment, ConsensusCommitment.ConsensusCommitmentStruct memory newCommitment) {
-      require(sum(newCommitment.proposedAllocation)==sum(oldCommitment.currentAllocation), "ConsensusApp:  allocation must be conserved");
-      _;
-    }
     
  // transition validations
  
@@ -79,7 +72,6 @@ contract ConsensusApp {
     private
     pure
     currentsUnchanged(oldCommitment, newCommitment)
-    totalAllocationConserved(oldCommitment, newCommitment)
     { }
 
     function validateAddVote(ConsensusCommitment.ConsensusCommitmentStruct memory oldCommitment, ConsensusCommitment.ConsensusCommitmentStruct memory newCommitment)
@@ -93,15 +85,13 @@ contract ConsensusApp {
     private
     pure
     currentsUnchanged(oldCommitment, newCommitment)
-    totalAllocationConserved(oldCommitment, newCommitment)
     { }
 
     function validateVeto(ConsensusCommitment.ConsensusCommitmentStruct memory oldCommitment, ConsensusCommitment.ConsensusCommitmentStruct memory newCommitment)
     private
     pure
     currentsUnchanged(oldCommitment, newCommitment)
-    { // no additional checks necessary
-    }
+    { }
 
     function validateNewAccord(ConsensusCommitment.ConsensusCommitmentStruct memory oldCommitment, ConsensusCommitment.ConsensusCommitmentStruct memory newCommitment)
     private
@@ -111,16 +101,6 @@ contract ConsensusApp {
 
 
 // helpers
-    function sum(uint[] memory _array) 
-        public 
-        pure 
-        returns (uint sum_) 
-    {
-        sum_ = 0;
-        for (uint i = 0; i < _array.length; i++) {
-            sum_ += _array[i];
-        }
-    }
 
     function encodeAndHashAllocation(uint256[] memory allocation) internal pure returns (bytes32) {
         return keccak256(abi.encode(allocation));
