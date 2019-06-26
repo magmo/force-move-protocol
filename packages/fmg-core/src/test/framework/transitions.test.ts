@@ -103,6 +103,12 @@ describe('Rules', () => {
       expect(await validTransition(fromCommitment, toCommitment)).toEqual(true);
     });
 
+    it('allows a valid transition when the allocations are empty', async () => {
+      fromCommitment.allocation = [];
+      toCommitment.allocation = [];
+      expect(await validTransition(fromCommitment, toCommitment)).toEqual(true);
+    });
+
     it("rejects a transition where the turnNum doesn't increment", async () => {
       toCommitment.turnNum = fromCommitment.turnNum;
       expect.assertions(1);
@@ -147,6 +153,7 @@ describe('Rules', () => {
         commitmentCountMustIncrement('PreFundSetup'),
       );
     });
+
     it('rejects a transition where the app attributes changes', async () => {
       toCommitment.appCounter = 45;
       expect.assertions(1);
@@ -154,6 +161,18 @@ describe('Rules', () => {
         () => validTransition(fromCommitment, toCommitment),
         appAttributesMustMatch('PreFundSetup'),
       );
+    });
+
+    it("rejects a transition where the destination and the allocation don't match in the fromCommitment", async () => {
+      fromCommitment.destination = fromCommitment.destination.slice(1);
+      expect.assertions(1);
+      await expectRevert(() => validTransition(fromCommitment, toCommitment));
+    });
+
+    it("rejects a transition where the destination and the allocation don't match in the toCommitment", async () => {
+      toCommitment.destination = toCommitment.destination.slice(1);
+      expect.assertions(1);
+      await expectRevert(() => validTransition(fromCommitment, toCommitment));
     });
   });
 
