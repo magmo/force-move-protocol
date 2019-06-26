@@ -130,6 +130,14 @@ library Rules {
             _toCommitment.turnNum == _fromCommitment.turnNum + 1,
             "Invalid transition: turnNum must increase by 1"
         );
+        require(
+            validCommitment(_fromCommitment),
+            "Invalid transition: fromCommitment must be valid"
+        );
+        require(
+            validCommitment(_toCommitment),
+            "Invalid transition: toCommitment must be valid"
+        );
 
         if (_fromCommitment.isPreFundSetup()) {
             return validTransitionFromPreFundSetup(_fromCommitment, _toCommitment);
@@ -292,6 +300,12 @@ library Rules {
             "Invalid transition from Conclude: destinations must be equal"
         );
         return true;
+    }
+
+    function validCommitment(Commitment.CommitmentStruct memory commitment)
+    public pure returns (bool) {
+        return commitment.allocation.length == 0 || // If it's a guarantor channel, this is allowed
+               commitment.allocation.length == commitment.destination.length;
     }
 
     function validAppTransition(
