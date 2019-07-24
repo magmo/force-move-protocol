@@ -310,10 +310,15 @@ contract NitroAdjudicator {
         transfer(channelId,participant, amount);
         withdraw(participant,destination, amount, _v,_r,_s);
     }
+    
+    struct SimpleStruct {
+        bool flag;
+    }
 
     function validTransition(
         Commitment.CommitmentStruct memory agreedCommitment,
-        Commitment.CommitmentStruct memory challengeCommitment
+        Commitment.CommitmentStruct memory challengeCommitment,
+        SimpleStruct[] memory unusedArg
     ) public pure returns (bool) {
         return Rules.validTransition(agreedCommitment, challengeCommitment);
     }
