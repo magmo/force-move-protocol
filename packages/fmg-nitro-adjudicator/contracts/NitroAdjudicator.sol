@@ -313,8 +313,7 @@ contract NitroAdjudicator {
     
     function validTransition(
         Commitment.CommitmentStruct memory agreedCommitment,
-        Commitment.CommitmentStruct memory challengeCommitment,
-        Signature[] memory unusedArg
+        Commitment.CommitmentStruct memory challengeCommitment
     ) public pure returns (bool) {
         return Rules.validTransition(agreedCommitment, challengeCommitment);
     }

@@ -1196,7 +1196,6 @@ describe('nitroAdjudicator', () => {
         const validTransition = await nitro.validTransition(
           getEthersObjectForCommitment(agreedCommitment),
           getEthersObjectForCommitment(challengeCommitment),
-          [],
         );
 
         expect(validTransition).toBe(true);
