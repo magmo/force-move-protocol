@@ -313,7 +313,8 @@ contract NitroAdjudicator {
 
     function validTransition(
         Commitment.CommitmentStruct memory agreedCommitment,
-        Commitment.CommitmentStruct memory challengeCommitment
+        Commitment.CommitmentStruct memory challengeCommitment,
+        Signature[] memory unusedArgument // see https://github.com/magmo/force-move-protocol/issues/86
     ) public pure returns (bool) {
         return Rules.validTransition(agreedCommitment, challengeCommitment);
     }
