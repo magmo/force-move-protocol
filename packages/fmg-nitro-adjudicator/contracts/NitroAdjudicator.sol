@@ -311,14 +311,10 @@ contract NitroAdjudicator {
         withdraw(participant,destination, amount, _v,_r,_s);
     }
     
-    struct SimpleStruct {
-        bool flag;
-    }
-
     function validTransition(
         Commitment.CommitmentStruct memory agreedCommitment,
         Commitment.CommitmentStruct memory challengeCommitment,
-        SimpleStruct[] memory unusedArg
+        Signature[] memory unusedArg
     ) public pure returns (bool) {
         return Rules.validTransition(agreedCommitment, challengeCommitment);
     }
