@@ -1186,6 +1186,23 @@ describe('nitroAdjudicator', () => {
       });
     });
 
+    describe('validTransition', () => {
+      it('works', async () => {
+        const agreedCommitment = commitment0;
+        const challengeCommitment = commitment1;
+
+        expectedAssertions += 1;
+        expect(await nitro.outcomeFinal(getChannelID(ledgerChannel))).toBe(false);
+        const validTransition = await nitro.validTransition(
+          getEthersObjectForCommitment(agreedCommitment),
+          getEthersObjectForCommitment(challengeCommitment),
+          [],
+        );
+
+        expect(validTransition).toBe(true);
+      });
+    });
+
     describe('forceMove', () => {
       it('emits ForceMove', async () => {
         const agreedCommitment = commitment0;

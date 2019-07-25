@@ -311,6 +311,14 @@ contract NitroAdjudicator {
         withdraw(participant,destination, amount, _v,_r,_s);
     }
 
+    function validTransition(
+        Commitment.CommitmentStruct memory agreedCommitment,
+        Commitment.CommitmentStruct memory challengeCommitment,
+        Signature[] memory unusedArgument // see https://github.com/magmo/force-move-protocol/issues/86
+    ) public pure returns (bool) {
+        return Rules.validTransition(agreedCommitment, challengeCommitment);
+    }
+
     function forceMove(
         Commitment.CommitmentStruct memory agreedCommitment,
         Commitment.CommitmentStruct memory challengeCommitment,
