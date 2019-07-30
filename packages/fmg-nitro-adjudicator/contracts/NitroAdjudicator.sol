@@ -32,12 +32,14 @@ contract INitroLibrary { // Abstraction of the NitroLibrary contract
     function affords(
         address recipient,
         Outcome calldata outcome,
-        uint funding
+        uint funding,
+        address token
     ) external pure returns (uint256);
 
     function reprioritize(
         Outcome calldata allocation,
-        Outcome calldata guarantee
+        Outcome calldata guarantee,
+        address token
     ) external pure returns (Outcome memory);
 
     function moveAuthorized(Commitment.CommitmentStruct calldata _commitment, Signature calldata signature) external pure returns (bool);
@@ -195,7 +197,7 @@ function deposit(address destination, uint expectedHeld,
             "Transfer: outcome must be present"
         );
 
-        uint channelAffordsForDestination = Library.affords(destination, outcomes[channel], holdings[channel][token]);
+        uint channelAffordsForDestination = Library.affords(destination, outcomes[channel], holdings[channel][token], token);
 
         require(
             amount <= channelAffordsForDestination,
@@ -242,9 +244,10 @@ function deposit(address destination, uint expectedHeld,
         uint funding = holdings[guarantor][token];
         INitroLibrary.Outcome memory reprioritizedOutcome = Library.reprioritize( // Abs
             outcomes[guarantee.challengeCommitment.guaranteedChannel],
-            guarantee
+            guarantee,
+            token
         );
-        if (Library.affords(recipient, reprioritizedOutcome, funding) >= amount) {
+        if (Library.affords(recipient, reprioritizedOutcome, funding, token) >= amount) {
             outcomes[guarantee.challengeCommitment.guaranteedChannel] = Library.reduce(
                 outcomes[guarantee.challengeCommitment.guaranteedChannel],
                 recipient,

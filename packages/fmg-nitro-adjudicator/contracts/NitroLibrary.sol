@@ -30,7 +30,8 @@ contract NitroLibrary {
 
     function reprioritize(
         Outcome memory allocation,
-        Outcome memory guarantee
+        Outcome memory guarantee,
+        address token
     ) public pure returns (Outcome memory) {
         require(
             guarantee.challengeCommitment.guaranteedChannel != zeroAddress,
@@ -40,7 +41,7 @@ contract NitroLibrary {
         uint[] memory newAllocation = new uint[](guarantee.destination.length);
         for (uint aIdx = 0; aIdx < allocation.destination.length; aIdx++) {
             for (uint gIdx = 0; gIdx < guarantee.destination.length; gIdx++) {
-                if (guarantee.destination[gIdx] == allocation.destination[aIdx]) {
+                if (guarantee.destination[gIdx] == allocation.destination[aIdx] && allocation.token[aIdx] == token) {
                     newDestination[gIdx] = allocation.destination[aIdx];
                     newAllocation[gIdx] = allocation.allocation[aIdx];
                     break;
@@ -60,7 +61,8 @@ contract NitroLibrary {
     function affords(
         address recipient,
         Outcome memory outcome,
-        uint funding
+        uint funding,
+        address token
     ) public pure returns (uint256) {
         uint result = 0;
         uint remainingFunding = funding;
@@ -70,7 +72,7 @@ contract NitroLibrary {
                 break;
             }
 
-            if (outcome.destination[i] == recipient) {
+            if (outcome.destination[i] == recipient && outcome.token[i]==token) {
                 // It is technically allowed for a recipient to be listed in the
                 // outcome multiple times, so we must iterate through the entire
                 // array.
@@ -97,7 +99,7 @@ contract NitroLibrary {
         uint256 reduction = 0;
         uint remainingAmount = amount;
         for (uint i = 0; i < outcome.destination.length; i++) {
-            if (outcome.destination[i] == recipient) {
+            if (outcome.destination[i] == recipient && outcome.token[i] == token) {
                 // It is technically allowed for a recipient to be listed in the
                 // outcome multiple times, so we must iterate through the entire
                 // array.

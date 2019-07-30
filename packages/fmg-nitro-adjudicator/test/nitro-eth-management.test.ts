@@ -567,15 +567,17 @@ describe('Nitro (ETH management)', () => {
     it('returns funding when funding is less than the amount allocated to the recipient in the outcome', async () => {
       const recipient = alice.address;
       const funding = ethers.utils.bigNumberify(2);
-      await expect(await nitroLibrary.affords(recipient, outcome, funding)).toEqual(funding);
+      await expect(await nitroLibrary.affords(recipient, outcome, funding, AddressZero)).toEqual(
+        funding,
+      );
     });
 
     it('returns funding when funding is equal to the amount allocated to the recipient in the outcome', async () => {
       const recipient = alice.address;
       const funding = aBal;
-      await expect((await nitroLibrary.affords(recipient, outcome, funding)).toHexString()).toEqual(
-        funding,
-      );
+      await expect(
+        (await nitroLibrary.affords(recipient, outcome, funding, AddressZero)).toHexString(),
+      ).toEqual(funding);
     });
 
     it('returns the allocated amount when funding is greater than the amount allocated to the recipient in the outcome', async () => {
@@ -583,9 +585,9 @@ describe('Nitro (ETH management)', () => {
       const funding = bigNumberify(aBal)
         .add(1)
         .toHexString();
-      await expect((await nitroLibrary.affords(recipient, outcome, funding)).toHexString()).toEqual(
-        aBal,
-      );
+      await expect(
+        (await nitroLibrary.affords(recipient, outcome, funding, AddressZero)).toHexString(),
+      ).toEqual(aBal);
     });
 
     it('returns zero when recipient is not a participant', async () => {
@@ -594,7 +596,9 @@ describe('Nitro (ETH management)', () => {
         .add(1)
         .toHexString();
       const zero = ethers.utils.bigNumberify(0);
-      await expect(await nitroLibrary.affords(recipient, outcome, funding)).toEqual(zero);
+      await expect(await nitroLibrary.affords(recipient, outcome, funding, AddressZero)).toEqual(
+        zero,
+      );
     });
   });
 
@@ -655,7 +659,7 @@ describe('Nitro (ETH management)', () => {
         token: [AddressZero, AddressZero],
       };
 
-      const newOutcome = await nitroLibrary.reprioritize(allocationOutcome, guarantee);
+      const newOutcome = await nitroLibrary.reprioritize(allocationOutcome, guarantee, AddressZero);
       expect(getOutcomeFromParameters(newOutcome)).toMatchObject(expectedOutcome);
     });
 
@@ -685,7 +689,7 @@ describe('Nitro (ETH management)', () => {
         token: [AddressZero, AddressZero],
       };
 
-      const newOutcome = await nitroLibrary.reprioritize(allocationOutcome, guarantee);
+      const newOutcome = await nitroLibrary.reprioritize(allocationOutcome, guarantee, AddressZero);
 
       expect(getOutcomeFromParameters(newOutcome)).toMatchObject(expectedOutcome);
     });
