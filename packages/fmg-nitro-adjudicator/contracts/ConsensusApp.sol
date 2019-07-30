@@ -151,6 +151,10 @@ contract ConsensusApp {
       encodeAndHashAllocation(oldCommitment.proposedAllocation) == encodeAndHashAllocation(newCommitment.proposedAllocation),
       "ConsensusApp: 'proposedAllocation' must be the same between commitments."
     );
+        require(
+      encodeAndHashAddressArray(oldCommitment.proposedDestination) == encodeAndHashAddressArray(newCommitment.proposedDestination),
+      "ConsensusApp: 'proposedDestination' must be the same between commitments."
+    );
     require(
       encodeAndHashAddressArray(oldCommitment.proposedToken) == encodeAndHashAddressArray(newCommitment.proposedToken),
       "ConsensusApp: 'proposedToken' must be the same between commitments."

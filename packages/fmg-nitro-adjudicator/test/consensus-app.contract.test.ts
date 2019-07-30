@@ -17,7 +17,6 @@ import {
   AppAttributes,
 } from '../src/consensus-app';
 import { AddressZero } from 'ethers/constants';
-
 jest.setTimeout(20000);
 let consensusApp: ethers.Contract;
 const provider = getGanacheProvider();
@@ -53,8 +52,10 @@ describe('ConsensusApp', () => {
     participantD.address,
   ];
   const proposedDestination = [participantA.address, participantB.address];
+  const proposedToken = [AddressZero, AddressZero];
 
   const allocation = [toUint256(1), toUint256(2), toUint256(3), toUint256(4)];
+  const token = [AddressZero, AddressZero, AddressZero, AddressZero];
   const proposedAllocation = [toUint256(6), toUint256(4)];
   const alternativeProposedDestination = [participantB.address, participantC.address];
   const alternativeProposedAllocation = [toUint256(4), toUint256(6)];
@@ -79,6 +80,7 @@ describe('ConsensusApp', () => {
     initialConsensus(defaults),
     proposedAllocation,
     proposedDestination,
+    proposedToken,
   );
   const twoVotesComplete = vote(oneVoteComplete);
   const threeVotesComplete = vote(twoVotesComplete);
@@ -99,9 +101,11 @@ describe('ConsensusApp', () => {
     });
     const proposeCommitmentAllocation = appCommitment(threeVotesComplete, {
       proposedAllocation: allocation.slice(1),
+      proposedToken: token.slice(1),
     });
     const proposeCommitmentDestination = appCommitment(threeVotesComplete, {
       proposedDestination: [],
+      proposedToken: [],
     });
 
     it('calls the consensus commitment validator on the new commitment', async () => {
@@ -149,7 +153,12 @@ describe('ConsensusApp', () => {
 
   describe('the propose transition', async () => {
     const fromCommitment = initialConsensus(defaults);
-    const toCommitment = propose(fromCommitment, proposedAllocation, proposedDestination);
+    const toCommitment = propose(
+      fromCommitment,
+      proposedAllocation,
+      proposedDestination,
+      proposedToken,
+    );
 
     itReturnsTrueOnAValidTransition(fromCommitment, toCommitment);
     itRevertsWhenTheBalancesAreChanged(fromCommitment, toCommitment);
