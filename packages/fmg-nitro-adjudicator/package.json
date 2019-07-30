@@ -62,7 +62,6 @@
     ],
     "globals": {
       "ts-jest": {
-        "diagnostics": false,
         "tsConfig": "./tsconfig.json"
       }
     },
@@ -71,6 +70,6 @@
   "prettier": {
     "printWidth": 100,
     "singleQuote": true,
-    "trailingComma": "all"
+    "trailingComma": "es5"
   }
 }

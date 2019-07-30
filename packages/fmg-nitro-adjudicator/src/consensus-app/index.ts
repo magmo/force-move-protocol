@@ -89,7 +89,7 @@ type TSConsensusCommitment = [
   Address[],
   Uint256[],
   Address[],
-  Address[],
+  Address[]
 ];
 
 export function consensusCommitmentArgs(commitment: ConsensusCommitment): TSConsensusCommitment {
@@ -159,7 +159,7 @@ export function propose(
   commitment: AppCommitment,
   proposedAllocation: Uint256[],
   proposedDestination: Address[],
-  proposedToken: Address[],
+  proposedToken: Address[]
 ): AppCommitment {
   const numParticipants = commitment.channel.participants.length;
   return {
