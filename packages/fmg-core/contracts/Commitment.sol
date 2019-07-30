@@ -83,6 +83,10 @@ library Commitment {
         return keccak256(abi.encodePacked(_commitment.destination)) == keccak256(abi.encodePacked(_otherCommitment.destination));
     }
 
+    function tokensEqual(CommitmentStruct memory _commitment, CommitmentStruct memory _otherCommitment) public pure returns (bool) {
+        return keccak256(abi.encodePacked(_commitment.token)) == keccak256(abi.encodePacked(_otherCommitment.token));
+    }
+
     // utilities
     // =========
 

@@ -10,14 +10,17 @@ library ConsensusCommitment {
         uint32 furtherVotesRequired;
         uint256[] proposedAllocation;
         address[] proposedDestination;
+        address[] proposedToken;
     }
 
     struct ConsensusCommitmentStruct {
         uint32 furtherVotesRequired;
         uint256[] currentAllocation;
         address[] currentDestination;
+        address[] currentToken;
         uint256[] proposedAllocation;
         address[] proposedDestination;
+        address[] proposedToken;
     }
 
     function getAppAttributesFromFrameworkCommitment(Commitment.CommitmentStruct memory frameworkCommitment) public pure returns(AppAttributes memory) {
@@ -31,8 +34,10 @@ library ConsensusCommitment {
             appAttributes.furtherVotesRequired,
             frameworkCommitment.allocation,
             frameworkCommitment.destination,
+            frameworkCommitment.token,
             appAttributes.proposedAllocation,
-            appAttributes.proposedDestination
+            appAttributes.proposedDestination,
+            appAttributes.proposedToken
         );
     }
 }
