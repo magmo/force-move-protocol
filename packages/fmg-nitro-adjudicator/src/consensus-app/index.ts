@@ -89,7 +89,7 @@ type TSConsensusCommitment = [
   Address[],
   Uint256[],
   Address[],
-  Address[]
+  Address[],
 ];
 
 export function consensusCommitmentArgs(commitment: ConsensusCommitment): TSConsensusCommitment {
