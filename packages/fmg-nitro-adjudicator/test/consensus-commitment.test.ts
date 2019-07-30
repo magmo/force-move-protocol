@@ -10,7 +10,6 @@ import { AddressZero } from 'ethers/constants';
 jest.setTimeout(20000);
 let consensusCommitment: ethers.Contract;
 const provider = getGanacheProvider();
-const providerSigner = provider.getSigner();
 
 async function setupContracts() {
   const networkId = await getNetworkId();
@@ -34,6 +33,7 @@ describe('ConsensusCommitment', () => {
     ethers.utils.bigNumberify(4).toHexString(),
   ];
   const proposedAllocation = [ethers.utils.bigNumberify(9).toHexString()];
+  const proposedToken = [AddressZero];
 
   const channel: Channel = {
     channelType: participantB.address,
@@ -54,13 +54,15 @@ describe('ConsensusCommitment', () => {
         commitmentCount: 0,
         commitmentType: CommitmentType.App,
         appAttributes: {
+          furtherVotesRequired: 0,
           proposedAllocation,
           proposedDestination,
-          furtherVotesRequired: 0,
+          proposedToken,
         },
       },
       proposedAllocation,
       proposedDestination,
+      proposedToken,
     ),
   );
 
@@ -77,6 +79,7 @@ describe('ConsensusCommitment', () => {
       currentDestination: participants,
       proposedAllocation,
       proposedDestination,
+      proposedToken,
     });
   });
 });
@@ -88,7 +91,9 @@ function convertToConsensusCommitmentObject(consensusCommitmentArgs) {
     furtherVotesRequired: parseInt(consensusCommitmentArgs[0], 10),
     currentAllocation: consensusCommitmentArgs[1].map(bigNumberify).map(bn => bn.toHexString()),
     currentDestination: consensusCommitmentArgs[2],
-    proposedAllocation: consensusCommitmentArgs[3].map(bigNumberify).map(bn => bn.toHexString()),
-    proposedDestination: consensusCommitmentArgs[4],
+    currentToken: consensusCommitmentArgs[3],
+    proposedAllocation: consensusCommitmentArgs[4].map(bigNumberify).map(bn => bn.toHexString()),
+    proposedDestination: consensusCommitmentArgs[5],
+    proposedToken: consensusCommitmentArgs[6],
   };
 }

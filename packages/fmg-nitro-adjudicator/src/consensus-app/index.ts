@@ -15,6 +15,7 @@ export interface AppAttributes {
   furtherVotesRequired: Uint32;
   proposedAllocation: Uint256[];
   proposedDestination: Address[];
+  proposedToken: Address[];
 }
 export interface ConsensusBaseCommitment extends BaseCommitment {
   appAttributes: AppAttributes;
@@ -51,12 +52,13 @@ export function isConsensusReached(c: ConsensusBaseCommitment) {
   return c.appAttributes.furtherVotesRequired === 0;
 }
 
-type SolidityAppAttributes = [string, string[], string[]];
+type SolidityAppAttributes = [string, string[], string[], string[]];
 export function appAttributes(ethersAppAttrs: SolidityAppAttributes): AppAttributes {
   return {
     furtherVotesRequired: parseInt(ethersAppAttrs[0], 10),
     proposedAllocation: ethersAppAttrs[1].map(bigNumberify).map(bn => bn.toHexString()),
     proposedDestination: ethersAppAttrs[2],
+    proposedToken: ethersAppAttrs[3],
   };
 }
 
@@ -65,6 +67,7 @@ const SolidityAppAttributesType = {
     furtherVotesRequired: 'uint32',
     proposedAllocation: 'uint256[]',
     proposedDestination: 'address[]',
+    proposedToken: 'address[]',
   },
 };
 
@@ -73,19 +76,31 @@ const SolidityConsensusCommitmentType = {
     furtherVotesRequired: 'uint32',
     currentAllocation: 'uint256[]',
     currentDestination: 'address[]',
+    currentToken: 'address[]',
     proposedAllocation: 'uint256[]',
     proposedDestination: 'address[]',
+    proposedToken: 'address[]',
   },
 };
-type TSConsensusCommitment = [number, Uint256[], Address[], Uint256[], Address[]];
+type TSConsensusCommitment = [
+  number,
+  Uint256[],
+  Address[],
+  Address[],
+  Uint256[],
+  Address[],
+  Address[]
+];
 
 export function consensusCommitmentArgs(commitment: ConsensusCommitment): TSConsensusCommitment {
   return [
     commitment.appAttributes.furtherVotesRequired,
     commitment.allocation,
     commitment.destination,
+    commitment.token,
     commitment.appAttributes.proposedAllocation,
     commitment.appAttributes.proposedDestination,
+    commitment.appAttributes.proposedToken,
   ];
 }
 
@@ -94,6 +109,7 @@ export function bytesFromAppAttributes(appAttrs: AppAttributes): Bytes {
     appAttrs.furtherVotesRequired,
     appAttrs.proposedAllocation,
     appAttrs.proposedDestination,
+    appAttrs.proposedToken,
   ]);
 }
 
@@ -113,6 +129,7 @@ export function asCoreCommitment(c: ConsensusCommitment): Commitment {
 const consensusAtts: () => AppAttributes = () => ({
   proposedAllocation: [],
   proposedDestination: [],
+  proposedToken: [],
   furtherVotesRequired: 0,
 });
 
@@ -142,14 +159,16 @@ export function propose(
   commitment: AppCommitment,
   proposedAllocation: Uint256[],
   proposedDestination: Address[],
+  proposedToken: Address[],
 ): AppCommitment {
   const numParticipants = commitment.channel.participants.length;
   return {
     ...nextAppCommitment(commitment),
     appAttributes: {
+      furtherVotesRequired: numParticipants - 1,
       proposedAllocation,
       proposedDestination,
-      furtherVotesRequired: numParticipants - 1,
+      proposedToken,
     },
   };
 }
@@ -184,6 +203,7 @@ export function finalVote(commitment: AppCommitment): AppCommitment {
     ...nextAppCommitment(commitment),
     allocation: commitment.appAttributes.proposedAllocation,
     destination: commitment.appAttributes.proposedDestination,
+    token: commitment.appAttributes.proposedToken,
     appAttributes: consensusAtts(),
   };
 }
