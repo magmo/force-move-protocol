@@ -34,16 +34,16 @@ describe('ConsensusApp', () => {
   });
 
   const participantA = new ethers.Wallet(
-    '6cbed15c793ce57650b9877cf6fa156fbef513c4e6134f022a85b1ffdd59b2a1',
+    '6cbed15c793ce57650b9877cf6fa156fbef513c4e6134f022a85b1ffdd59b2a1'
   );
   const participantB = new ethers.Wallet(
-    '6370fd033278c143179d81c5526140625662b8daa446c22ee2d73db3707e620c',
+    '6370fd033278c143179d81c5526140625662b8daa446c22ee2d73db3707e620c'
   );
   const participantC = new ethers.Wallet(
-    '5e1b32fb763f62e1d19a9c9cd8c5417bd31b7d697ee018a8afe3cac2292fdd3e',
+    '5e1b32fb763f62e1d19a9c9cd8c5417bd31b7d697ee018a8afe3cac2292fdd3e'
   );
   const participantD = new ethers.Wallet(
-    '0cd211e36788b51c08ec3c622266e0eaddb6a1a028a8fbdd60797c6adf7a3392',
+    '0cd211e36788b51c08ec3c622266e0eaddb6a1a028a8fbdd60797c6adf7a3392'
   );
   const participants = [
     participantA.address,
@@ -80,7 +80,7 @@ describe('ConsensusApp', () => {
     initialConsensus(defaults),
     proposedAllocation,
     proposedDestination,
-    proposedToken,
+    proposedToken
   );
   const twoVotesComplete = vote(oneVoteComplete);
   const threeVotesComplete = vote(twoVotesComplete);
@@ -112,13 +112,13 @@ describe('ConsensusApp', () => {
       await invalidTransition(
         fromCommitment,
         consensusCommitmentAllocation,
-        "ConsensusApp: 'proposedAllocation' must be reset during consensus.",
+        "ConsensusApp: 'proposedAllocation' must be reset during consensus."
       );
 
       await invalidTransition(
         fromCommitment,
         consensusCommitmentDestination,
-        "ConsensusApp: 'proposedDestination' must be reset during consensus.",
+        "ConsensusApp: 'proposedDestination' must be reset during consensus."
       );
     });
 
@@ -126,13 +126,13 @@ describe('ConsensusApp', () => {
       await invalidTransition(
         fromCommitment,
         proposeCommitmentDestination,
-        "ConsensusApp: 'proposedDestination' must not be reset during propose.",
+        "ConsensusApp: 'proposedDestination' must not be reset during propose."
       );
 
       await invalidTransition(
         fromCommitment,
         proposeCommitmentAllocation,
-        'ConsensusApp: Outcome must be valid during propose',
+        'ConsensusApp: Outcome must be valid during propose'
       );
     });
 
@@ -140,13 +140,13 @@ describe('ConsensusApp', () => {
       await invalidTransition(
         consensusCommitmentAllocation,
         toCommitment,
-        "ConsensusApp: 'proposedAllocation' must be reset during consensus.",
+        "ConsensusApp: 'proposedAllocation' must be reset during consensus."
       );
 
       await invalidTransition(
         proposeCommitmentDestination,
         toCommitment,
-        "ConsensusApp: 'proposedDestination' must not be reset during propose.",
+        "ConsensusApp: 'proposedDestination' must not be reset during propose."
       );
     });
   });
@@ -157,7 +157,7 @@ describe('ConsensusApp', () => {
       fromCommitment,
       proposedAllocation,
       proposedDestination,
-      proposedToken,
+      proposedToken
     );
 
     itReturnsTrueOnAValidTransition(fromCommitment, toCommitment);
@@ -200,7 +200,7 @@ describe('ConsensusApp', () => {
 
   function appCommitment(
     c: ConsensusBaseCommitment,
-    attrs?: Partial<AppAttributes>,
+    attrs?: Partial<AppAttributes>
   ): AppCommitment {
     return {
       ...c,
@@ -215,7 +215,7 @@ describe('ConsensusApp', () => {
   async function invalidTransition(
     fromConsensusCommitment: ConsensusBaseCommitment,
     toConsensusCommitment: ConsensusBaseCommitment,
-    reason?,
+    reason?
   ) {
     const fromCommitment = appCommitment(fromConsensusCommitment);
     const toCommitment = appCommitment(toConsensusCommitment);
@@ -223,23 +223,23 @@ describe('ConsensusApp', () => {
       async () =>
         await consensusApp.validTransition(
           ethereumArgs(asCoreCommitment(fromCommitment)),
-          ethereumArgs(asCoreCommitment(toCommitment)),
+          ethereumArgs(asCoreCommitment(toCommitment))
         ),
-      reason,
+      reason
     );
   }
 
   async function validTransition(
     fromConsensusCommitment: ConsensusBaseCommitment,
-    toConsensusCommitment: ConsensusBaseCommitment,
+    toConsensusCommitment: ConsensusBaseCommitment
   ) {
     const fromCommitment = appCommitment(fromConsensusCommitment);
     const toCommitment = appCommitment(toConsensusCommitment);
     expect(
       await consensusApp.validTransition(
         ethereumArgs(asCoreCommitment(fromCommitment)),
-        ethereumArgs(asCoreCommitment(toCommitment)),
-      ),
+        ethereumArgs(asCoreCommitment(toCommitment))
+      )
     ).toBe(true);
   }
 
@@ -278,7 +278,7 @@ describe('ConsensusApp', () => {
       await invalidTransition(
         fromCommitmentArgs,
         toCommitmentDifferentAllocation,
-        "ConsensusApp: 'allocation' must be the same between ",
+        "ConsensusApp: 'allocation' must be the same between "
       );
     });
     it('reverts when the destination is changed', async () => {
@@ -290,7 +290,7 @@ describe('ConsensusApp', () => {
       await invalidTransition(
         fromCommitmentArgs,
         toCommitmentDifferentDestination,
-        "ConsensusApp: 'destination' must be the same between ",
+        "ConsensusApp: 'destination' must be the same between "
       );
     });
   }
@@ -304,7 +304,7 @@ describe('ConsensusApp', () => {
       await invalidTransition(
         fromCommitmentArgs,
         toCommitmentDifferentAllocation,
-        "ConsensusApp: 'proposedAllocation' must be the same between ",
+        "ConsensusApp: 'proposedAllocation' must be the same between "
       );
     });
     it('reverts when the proposedDestination is changed', async () => {
@@ -315,7 +315,7 @@ describe('ConsensusApp', () => {
       await invalidTransition(
         fromCommitmentArgs,
         toCommitmentDifferentDestination,
-        "ConsensusApp: 'proposedDestination' must be the same between ",
+        "ConsensusApp: 'proposedDestination' must be the same between "
       );
     });
   }

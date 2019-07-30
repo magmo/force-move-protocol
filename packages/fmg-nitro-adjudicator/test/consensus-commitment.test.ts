@@ -20,10 +20,10 @@ async function setupContracts() {
 
 describe('ConsensusCommitment', () => {
   const participantA = new ethers.Wallet(
-    '6cbed15c793ce57650b9877cf6fa156fbef513c4e6134f022a85b1ffdd59b2a1',
+    '6cbed15c793ce57650b9877cf6fa156fbef513c4e6134f022a85b1ffdd59b2a1'
   );
   const participantB = new ethers.Wallet(
-    '6370fd033278c143179d81c5526140625662b8daa446c22ee2d73db3707e620c',
+    '6370fd033278c143179d81c5526140625662b8daa446c22ee2d73db3707e620c'
   );
   const participants = [participantA.address, participantB.address];
   const proposedDestination = [participantB.address];
@@ -62,14 +62,14 @@ describe('ConsensusCommitment', () => {
       },
       proposedAllocation,
       proposedDestination,
-      proposedToken,
-    ),
+      proposedToken
+    )
   );
 
   it('works', async () => {
     await setupContracts();
     const consensusCommitmentAttrs = await consensusCommitment.fromFrameworkCommitment(
-      asEthersObject(commitment),
+      asEthersObject(commitment)
     );
 
     const consensusCommitmentObject = convertToConsensusCommitmentObject(consensusCommitmentAttrs);

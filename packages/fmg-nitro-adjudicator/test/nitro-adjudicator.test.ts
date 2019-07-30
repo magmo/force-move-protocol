@@ -15,7 +15,7 @@ jest.setTimeout(20000);
 let nitro: ethers.Contract;
 let countingAppAddress;
 const provider = new ethers.providers.JsonRpcProvider(
-  `http://localhost:${process.env.DEV_GANACHE_PORT}`,
+  `http://localhost:${process.env.DEV_GANACHE_PORT}`
 );
 const signer0 = provider.getSigner(0);
 let nullOutcome: {} | any[];
@@ -210,7 +210,7 @@ describe('ForceMove methods', () => {
         expect(endDestination).toEqual(conclusionProof.penultimateCommitment.destination);
         expect(endAllocation.map(a => a.toHexString())).toEqual(allocation);
         expect(asEthersObject(fromParameters(challengeCommitment))).toMatchObject(
-          conclusionProof.penultimateCommitment,
+          conclusionProof.penultimateCommitment
         );
         // TODO: figure out how to test finalizedAt
       });
@@ -264,7 +264,7 @@ describe('ForceMove methods', () => {
         expect(endDestination).toEqual(conclusionProofAlt.penultimateCommitment.destination);
         expect(endAllocation.map(a => a.toHexString())).toEqual(commitment4alt.allocation);
         expect(asEthersObject(fromParameters(challengeCommitment))).toMatchObject(
-          conclusionProofAlt.penultimateCommitment,
+          conclusionProofAlt.penultimateCommitment
         );
       });
 
@@ -275,7 +275,7 @@ describe('ForceMove methods', () => {
         expect.assertions(expectedAssertions);
         await expectRevert(
           () => nitro.conclude(conclusionProof),
-          'Conclude: channel must not be finalized',
+          'Conclude: channel must not be finalized'
         );
       });
     });
@@ -287,11 +287,11 @@ describe('ForceMove methods', () => {
 
         const { r: r0, s: s0, v: v0 } = sign(
           getHexForCommitment(agreedCommitment),
-          challengee.privateKey,
+          challengee.privateKey
         );
         const { r: r1, s: s1, v: v1 } = sign(
           getHexForCommitment(challengeCommitment),
-          challenger.privateKey,
+          challenger.privateKey
         );
         const signatures = [{ r: r0, s: s0, v: v0 }, { r: r1, s: s1, v: v1 }];
 
@@ -300,7 +300,7 @@ describe('ForceMove methods', () => {
         const tx = await nitro.forceMove(
           getEthersObjectForCommitment(agreedCommitment),
           getEthersObjectForCommitment(challengeCommitment),
-          signatures,
+          signatures
         );
         const { events } = await tx.wait();
 
@@ -318,11 +318,11 @@ describe('ForceMove methods', () => {
 
         const { r: r0, s: s0, v: v0 } = sign(
           getHexForCommitment(agreedCommitment),
-          challengee.privateKey,
+          challengee.privateKey
         );
         const { r: r1, s: s1, v: v1 } = sign(
           getHexForCommitment(challengeCommitment),
-          challenger.privateKey,
+          challenger.privateKey
         );
         const signatures = [{ r: r0, s: s0, v: v0 }, { r: r1, s: s1, v: v1 }];
 
@@ -332,7 +332,7 @@ describe('ForceMove methods', () => {
         const tx = nitro.forceMove(
           getEthersObjectForCommitment(agreedCommitment),
           getEthersObjectForCommitment(challengeCommitment),
-          signatures,
+          signatures
         );
         expect.assertions(expectedAssertions);
         await expectRevert(() => tx, 'Invalid transition: turnNum must increase by 1');
@@ -344,11 +344,11 @@ describe('ForceMove methods', () => {
 
         const { r: r0, s: s0, v: v0 } = sign(
           getHexForCommitment(agreedCommitment),
-          challengee.privateKey,
+          challengee.privateKey
         );
         const { r: r1, s: s1, v: v1 } = sign(
           getHexForCommitment(commitment3),
-          challenger.privateKey,
+          challenger.privateKey
         );
         const signatures = [{ r: r0, s: s0, v: v0 }, { r: r1, s: s1, v: v1 }];
 
@@ -358,7 +358,7 @@ describe('ForceMove methods', () => {
         const tx = nitro.forceMove(
           getEthersObjectForCommitment(agreedCommitment),
           getEthersObjectForCommitment(challengeCommitment),
-          signatures,
+          signatures
         );
         expect.assertions(expectedAssertions);
         await expectRevert(() => tx, 'ForceMove: challengeCommitment not authorized');
@@ -370,11 +370,11 @@ describe('ForceMove methods', () => {
 
         const { r: r0, s: s0, v: v0 } = sign(
           getHexForCommitment(agreedCommitment),
-          challengee.privateKey,
+          challengee.privateKey
         );
         const { r: r1, s: s1, v: v1 } = sign(
           getHexForCommitment(challengeCommitment),
-          challenger.privateKey,
+          challenger.privateKey
         );
         const signatures = [{ r: r0, s: s0, v: v0 }, { r: r1, s: s1, v: v1 }];
 
@@ -392,7 +392,7 @@ describe('ForceMove methods', () => {
         const tx = nitro.forceMove(
           getEthersObjectForCommitment(agreedCommitment),
           getEthersObjectForCommitment(challengeCommitment),
-          signatures,
+          signatures
         );
         expect.assertions(expectedAssertions);
         await expectRevert(() => tx, 'ForceMove: channel must be open');
@@ -415,7 +415,7 @@ describe('ForceMove methods', () => {
         await nitro.forceMove(
           getEthersObjectForCommitment(agreedCommitment),
           getEthersObjectForCommitment(challengeCommitment),
-          signatures,
+          signatures
         );
         // challenge should be created
         expectedAssertions += 1;
@@ -429,17 +429,17 @@ describe('ForceMove methods', () => {
 
         const { r: r0, s: s0, v: v0 } = sign(
           getHexForCommitment(agreedCommitment),
-          challengee.privateKey,
+          challengee.privateKey
         );
         const { r: r1, s: s1, v: v1 } = sign(
           getHexForCommitment(challengeCommitment),
-          challenger.privateKey,
+          challenger.privateKey
         );
         signatures = [{ r: r0, s: s0, v: v0 }, { r: r1, s: s1, v: v1 }];
 
         const { r: r2, s: s2, v: v2 } = sign(
           getHexForCommitment(refutationCommitment),
-          challenger.privateKey,
+          challenger.privateKey
         );
         refutationSignature = { r: r2, s: s2, v: v2 };
       });
@@ -450,9 +450,9 @@ describe('ForceMove methods', () => {
         await expectEvent(
           await nitro.refute(
             getEthersObjectForCommitment(refutationCommitment),
-            refutationSignature,
+            refutationSignature
           ),
-          'Refuted',
+          'Refuted'
         );
 
         // "challenge should be cancelled
@@ -471,7 +471,7 @@ describe('ForceMove methods', () => {
         await expectRevert(
           () =>
             nitro.refute(getEthersObjectForCommitment(refutationCommitment), refutationSignature),
-          'Refute: channel must be open',
+          'Refute: channel must be open'
         );
       });
 
@@ -481,7 +481,7 @@ describe('ForceMove methods', () => {
         expect.assertions(expectedAssertions);
         await expectRevert(
           () => nitro.refute(getEthersObjectForCommitment(refutationCommitment), signatures[0]),
-          'Refute: move must be authorized',
+          'Refute: move must be authorized'
         );
       });
 
@@ -493,7 +493,7 @@ describe('ForceMove methods', () => {
 
         const { r: r3, s: s3, v: v3 } = sign(
           getHexForCommitment(invalidRefutationCommitment),
-          challenger.privateKey,
+          challenger.privateKey
         );
         const invalidRefutationSignature = { r: r3, s: s3, v: v3 };
 
@@ -502,9 +502,9 @@ describe('ForceMove methods', () => {
           () =>
             nitro.refute(
               getEthersObjectForCommitment(invalidRefutationCommitment),
-              invalidRefutationSignature,
+              invalidRefutationSignature
             ),
-          'the refutationCommitment must have a higher nonce',
+          'the refutationCommitment must have a higher nonce'
         );
       });
     });
@@ -524,17 +524,17 @@ describe('ForceMove methods', () => {
 
         const { r: r0, s: s0, v: v0 } = sign(
           getHexForCommitment(agreedCommitment),
-          challengee.privateKey,
+          challengee.privateKey
         );
         const { r: r1, s: s1, v: v1 } = sign(
           getHexForCommitment(challengeCommitment),
-          challenger.privateKey,
+          challenger.privateKey
         );
         signatures = [{ r: r0, s: s0, v: v0 }, { r: r1, s: s1, v: v1 }];
 
         const { r: r2, s: s2, v: v2 } = sign(
           getHexForCommitment(responseCommitment),
-          challengee.privateKey,
+          challengee.privateKey
         );
         responseSignature = { r: r2, s: s2, v: v2 };
       });
@@ -548,7 +548,7 @@ describe('ForceMove methods', () => {
         await nitro.forceMove(
           getEthersObjectForCommitment(agreedCommitment),
           getEthersObjectForCommitment(challengeCommitment),
-          signatures,
+          signatures
         );
         // challenge should be created
         expectedAssertions += 1;
@@ -561,9 +561,9 @@ describe('ForceMove methods', () => {
         await expectEvent(
           await nitro.respondWithMove(
             getEthersObjectForCommitment(responseCommitment),
-            responseSignature,
+            responseSignature
           ),
-          'RespondedWithMove',
+          'RespondedWithMove'
         );
 
         // "challenge should be cancelled
@@ -583,9 +583,9 @@ describe('ForceMove methods', () => {
           () =>
             nitro.respondWithMove(
               getEthersObjectForCommitment(responseCommitment),
-              responseSignature,
+              responseSignature
             ),
-          'RespondWithMove: channel must be open',
+          'RespondWithMove: channel must be open'
         );
       });
 
@@ -596,7 +596,7 @@ describe('ForceMove methods', () => {
         await expectRevert(
           () =>
             nitro.respondWithMove(getEthersObjectForCommitment(responseCommitment), signatures[0]),
-          'RespondWithMove: move must be authorized',
+          'RespondWithMove: move must be authorized'
         );
       });
 
@@ -607,7 +607,7 @@ describe('ForceMove methods', () => {
 
         const { r: r3, s: s3, v: v3 } = sign(
           getHexForCommitment(invalidResponseCommitment),
-          challenger.privateKey,
+          challenger.privateKey
         );
         const invalidResponseSignature = { r: r3, s: s3, v: v3 };
 
@@ -616,9 +616,9 @@ describe('ForceMove methods', () => {
           () =>
             nitro.respondWithMove(
               getEthersObjectForCommitment(invalidResponseCommitment),
-              invalidResponseSignature,
+              invalidResponseSignature
             ),
-          'Invalid transition: turnNum must increase by 1',
+          'Invalid transition: turnNum must increase by 1'
         );
       });
     });
@@ -641,21 +641,21 @@ describe('ForceMove methods', () => {
 
         const { r: r0, s: s0, v: v0 } = sign(
           getHexForCommitment(agreedCommitment),
-          challengee.privateKey,
+          challengee.privateKey
         );
         const { r: r1, s: s1, v: v1 } = sign(
           getHexForCommitment(challengeCommitment),
-          challenger.privateKey,
+          challenger.privateKey
         );
         signatures = [{ r: r0, s: s0, v: v0 }, { r: r1, s: s1, v: v1 }];
 
         const { r: r2, s: s2, v: v2 } = sign(
           getHexForCommitment(alternativeCommitment),
-          challenger.privateKey,
+          challenger.privateKey
         );
         const { r: r3, s: s3, v: v3 } = sign(
           getHexForCommitment(responseCommitment),
-          challengee.privateKey,
+          challengee.privateKey
         );
 
         alternativeSignature = { r: r2, s: s2, v: v2 };
@@ -671,7 +671,7 @@ describe('ForceMove methods', () => {
         await nitro.forceMove(
           getEthersObjectForCommitment(agreedCommitment),
           getEthersObjectForCommitment(challengeCommitment),
-          signatures,
+          signatures
         );
         // challenge should be created
         expectedAssertions += 1;
@@ -686,9 +686,9 @@ describe('ForceMove methods', () => {
             getEthersObjectForCommitment(alternativeCommitment),
             getEthersObjectForCommitment(responseCommitment),
             alternativeSignature,
-            responseSignature,
+            responseSignature
           ),
-          'RespondedWithAlternativeMove',
+          'RespondedWithAlternativeMove'
         );
 
         // "challenge should be cancelled
@@ -710,9 +710,9 @@ describe('ForceMove methods', () => {
               getEthersObjectForCommitment(alternativeCommitment),
               getEthersObjectForCommitment(responseCommitment),
               alternativeSignature,
-              responseSignature,
+              responseSignature
             ),
-          'AlternativeRespondWithMove: channel must be open',
+          'AlternativeRespondWithMove: channel must be open'
         );
       });
 
@@ -726,9 +726,9 @@ describe('ForceMove methods', () => {
               getEthersObjectForCommitment(alternativeCommitment),
               getEthersObjectForCommitment(responseCommitment),
               alternativeSignature,
-              alternativeSignature,
+              alternativeSignature
             ),
-          'AlternativeRespondWithMove: move must be authorized',
+          'AlternativeRespondWithMove: move must be authorized'
         );
       });
 
@@ -739,7 +739,7 @@ describe('ForceMove methods', () => {
 
         const { r: r3, s: s3, v: v3 } = sign(
           getHexForCommitment(invalidResponseCommitment),
-          challenger.privateKey,
+          challenger.privateKey
         );
         const invalidResponseSignature = { r: r3, s: s3, v: v3 };
 
@@ -750,9 +750,9 @@ describe('ForceMove methods', () => {
               getEthersObjectForCommitment(alternativeCommitment),
               getEthersObjectForCommitment(invalidResponseCommitment),
               alternativeSignature,
-              invalidResponseSignature,
+              invalidResponseSignature
             ),
-          'Invalid transition: turnNum must increase by 1',
+          'Invalid transition: turnNum must increase by 1'
         );
       });
 
@@ -764,12 +764,12 @@ describe('ForceMove methods', () => {
 
         const { r: r3, s: s3, v: v3 } = sign(
           getHexForCommitment(invalidAlternativeCommitment),
-          challenger.privateKey,
+          challenger.privateKey
         );
         const invalidAlternativeSignature = { r: r3, s: s3, v: v3 };
         const { r: r4, s: s4, v: v4 } = sign(
           getHexForCommitment(invalidResponseCommitment),
-          challenger.privateKey,
+          challenger.privateKey
         );
         const invalidResponseSignature = { r: r4, s: s4, v: v4 };
 
@@ -780,9 +780,9 @@ describe('ForceMove methods', () => {
               getEthersObjectForCommitment(invalidAlternativeCommitment),
               getEthersObjectForCommitment(invalidResponseCommitment),
               invalidAlternativeSignature,
-              invalidResponseSignature,
+              invalidResponseSignature
             ),
-          'alternativeCommitment must have the same nonce as the challenge commitment',
+          'alternativeCommitment must have the same nonce as the challenge commitment'
         );
       });
     });

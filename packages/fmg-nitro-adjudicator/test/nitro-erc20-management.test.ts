@@ -22,7 +22,7 @@ async function withdraw(
   signer = participant,
   amount: ethers.utils.BigNumberish = ERC20_DEPOSIT_AMOUNT,
   senderAddr = null,
-  token = AddressZero,
+  token = AddressZero
 ): Promise<any> {
   senderAddr = senderAddr || (await nitroAdjudicator.signer.getAddress());
   const authorization = abiCoder.encode(AUTH_TYPES, [
@@ -43,17 +43,17 @@ async function withdraw(
     sig.s,
     {
       gasLimit: 3000000,
-    },
+    }
   );
 }
 
 const provider = new ethers.providers.JsonRpcProvider(
-  `http://localhost:${process.env.DEV_GANACHE_PORT}`,
+  `http://localhost:${process.env.DEV_GANACHE_PORT}`
 );
 const signer0 = provider.getSigner(0);
 
 const alice = new ethers.Wallet(
-  '0x5d862464fe9303452126c8bc94274b8c5f9874cbd219789b3eb2128075a76f72',
+  '0x5d862464fe9303452126c8bc94274b8c5f9874cbd219789b3eb2128075a76f72'
 );
 const bob = new ethers.Wallet('0xdf02719c4df8b9b8ac7f551fcb5d9ef48fa27eef7a66453879f4d8fdc6e78fb1');
 const guarantor = ethers.Wallet.createRandom();
@@ -124,7 +124,7 @@ describe('Nitro (ERC20 management)', () => {
     nitroAdjudicator = new ethers.Contract(
       nitroAdjudicatorAddress,
       nitroAdjudicatorArtifact.abi,
-      signer0,
+      signer0
     );
     erc20Address = erc20Artifact.networks[networkId].address;
     erc20 = new ethers.Contract(erc20Address, erc20Artifact.abi, signer0);
@@ -172,7 +172,7 @@ describe('Nitro (ERC20 management)', () => {
         randomAddress,
         0,
         ERC20_DEPOSIT_AMOUNT,
-        erc20Address,
+        erc20Address
       )).wait();
       await expect(receipt2.status).toEqual(1);
     });
@@ -238,7 +238,7 @@ describe('Nitro (ERC20 management)', () => {
         randomAddress,
         amountHeld - 2,
         1,
-        erc20Address,
+        erc20Address
       )).wait();
       await expect(receipt.status).toEqual(1);
     });
@@ -276,7 +276,7 @@ describe('Nitro (ERC20 management)', () => {
         randomAddress,
         2,
         amountHeld - 1,
-        erc20Address,
+        erc20Address
       )).wait();
       await expect(receipt.status).toEqual(1);
     });
@@ -290,7 +290,7 @@ describe('Nitro (ERC20 management)', () => {
       const logs = await provider.getLogs(filter);
       const data = abiCoder.encode(
         ['address', 'uint256', 'uint256'],
-        [randomAddress, 1, amountHeld + 1],
+        [randomAddress, 1, amountHeld + 1]
       );
       await expect(logs[0].data).toEqual(data);
     });
@@ -312,7 +312,7 @@ describe('Nitro (ERC20 management)', () => {
         alice.address,
         amountHeld,
         ERC20_WITHDRAWAL_AMOUNT,
-        erc20Address,
+        erc20Address
       )).wait();
       allocatedAtStart = Number(await nitroAdjudicator.holdings(alice.address, erc20Address));
       beforeBalance = Number(await erc20.balanceOf(aliceDest.address));
@@ -326,20 +326,20 @@ describe('Nitro (ERC20 management)', () => {
         alice,
         ERC20_WITHDRAWAL_AMOUNT,
         null,
-        erc20Address,
+        erc20Address
       )).wait();
       await expect(receipt.status).toEqual(1);
     });
 
     it('Destination balance increases', async () => {
       await expect(Number(await erc20.balanceOf(aliceDest.address))).toEqual(
-        beforeBalance + ERC20_WITHDRAWAL_AMOUNT,
+        beforeBalance + ERC20_WITHDRAWAL_AMOUNT
       );
     });
 
     it('holdings[participant][0x] decreases', async () => {
       await expect(Number(await nitroAdjudicator.holdings(alice.address, erc20Address))).toEqual(
-        allocatedAtStart - ERC20_WITHDRAWAL_AMOUNT,
+        allocatedAtStart - ERC20_WITHDRAWAL_AMOUNT
       );
     });
   });
@@ -354,7 +354,7 @@ describe('Nitro (ERC20 management)', () => {
         alice.address,
         amountHeld,
         ERC20_WITHDRAWAL_AMOUNT,
-        erc20Address,
+        erc20Address
       )).wait();
       const allocatedAtStart = Number(await nitroAdjudicator.holdings(alice.address, erc20Address));
       await expect(allocatedAtStart).toBeGreaterThanOrEqual(ERC20_WITHDRAWAL_AMOUNT);
@@ -367,7 +367,7 @@ describe('Nitro (ERC20 management)', () => {
         bob,
         ERC20_WITHDRAWAL_AMOUNT,
         null,
-        erc20Address,
+        erc20Address
       );
       await expectRevert(() => tx2, 'Withdraw: not authorized by participant');
     });
@@ -384,7 +384,7 @@ describe('Nitro (ERC20 management)', () => {
         alice.address,
         amountHeld,
         ERC20_WITHDRAWAL_AMOUNT,
-        erc20Address,
+        erc20Address
       )).wait();
       allocatedAtStart = Number(await nitroAdjudicator.holdings(alice.address, erc20Address));
       await expect(allocatedAtStart).toBeGreaterThanOrEqual(ERC20_WITHDRAWAL_AMOUNT);
@@ -397,7 +397,7 @@ describe('Nitro (ERC20 management)', () => {
         alice,
         allocatedAtStart + 1,
         null,
-        erc20Address,
+        erc20Address
       );
       await expectRevert(() => tx2, 'Withdraw: overdrawn');
     });
@@ -411,13 +411,13 @@ describe('Nitro (ERC20 management)', () => {
       await (await erc20.approve(nitroAdjudicatorAddress, transferAmount)).wait();
       const amountHeldAgainstLedgerChannel = await nitroAdjudicator.holdings(
         getChannelID(ledgerChannel),
-        erc20Address,
+        erc20Address
       );
       await (await nitroAdjudicator.deposit(
         getChannelID(ledgerChannel),
         amountHeldAgainstLedgerChannel,
         transferAmount,
-        erc20Address,
+        erc20Address
       )).wait();
       const allocationOutcome = {
         destination: [alice.address, bob.address],
@@ -428,12 +428,12 @@ describe('Nitro (ERC20 management)', () => {
       };
       await (await nitroAdjudicator.setOutcome(
         getChannelID(ledgerChannel),
-        allocationOutcome,
+        allocationOutcome
       )).wait();
 
       allocatedToChannel = await nitroAdjudicator.holdings(
         getChannelID(ledgerChannel),
-        erc20Address,
+        erc20Address
       );
       allocatedToAlice = await nitroAdjudicator.holdings(alice.address, erc20Address);
     });
@@ -443,7 +443,7 @@ describe('Nitro (ERC20 management)', () => {
         getChannelID(ledgerChannel),
         alice.address,
         transferAmount,
-        erc20Address,
+        erc20Address
       )).wait();
 
       await expect(receipt1.status).toEqual(1);
@@ -451,13 +451,13 @@ describe('Nitro (ERC20 management)', () => {
 
     it('holdings[to][erc20] increases', async () => {
       await expect(await nitroAdjudicator.holdings(alice.address, erc20Address)).toEqual(
-        allocatedToAlice.add(transferAmount),
+        allocatedToAlice.add(transferAmount)
       );
     });
 
     it('holdings[from][erc20] decreases', async () => {
       await expect(
-        await nitroAdjudicator.holdings(getChannelID(ledgerChannel), erc20Address),
+        await nitroAdjudicator.holdings(getChannelID(ledgerChannel), erc20Address)
       ).toEqual(allocatedToChannel.sub(allocation[0]));
     });
   });
@@ -489,7 +489,7 @@ describe('Nitro (ERC20 management)', () => {
       await (await nitroAdjudicator.setOutcome(guarantor.address, guarantee)).wait();
       await (await nitroAdjudicator.setOutcome(
         getChannelID(ledgerChannel),
-        allocationOutcome,
+        allocationOutcome
       )).wait();
 
       startBal = 5;
@@ -517,7 +517,7 @@ describe('Nitro (ERC20 management)', () => {
         guarantor.address,
         recipient,
         claimAmount,
-        erc20Address,
+        erc20Address
       );
       const receipt1 = await tx1.wait();
       await expect(receipt1.status).toEqual(1);
@@ -530,13 +530,13 @@ describe('Nitro (ERC20 management)', () => {
 
     it('holdings[gurantor][erc20] decreases', async () => {
       await expect(
-        Number(await nitroAdjudicator.holdings(guarantor.address, erc20Address)),
+        Number(await nitroAdjudicator.holdings(guarantor.address, erc20Address))
       ).toEqual(startBal - claimAmount);
     });
 
     it('holdings[recipient][erc20] decreases', async () => {
       await expect(Number(await nitroAdjudicator.holdings(recipient, erc20Address))).toEqual(
-        startBalRecipient + claimAmount,
+        startBalRecipient + claimAmount
       );
     });
   });

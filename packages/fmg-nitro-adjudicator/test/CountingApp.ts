@@ -12,7 +12,7 @@ export async function getCountingApp() {
   CountingAppArtifact.bytecode = linkedByteCode(
     CountingAppArtifact,
     CountingCommitmentArtifact,
-    networkId,
+    networkId
   );
 
   const wallet = getWalletWithEthAndProvider();

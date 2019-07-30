@@ -23,7 +23,7 @@ async function withdraw(
   signer = participant,
   amount: ethers.utils.BigNumberish = DEPOSIT_AMOUNT,
   senderAddr = null,
-  token = AddressZero,
+  token = AddressZero
 ): Promise<any> {
   senderAddr = senderAddr || (await nitroAdjudicator.signer.getAddress());
   const authorization = abiCoder.encode(AUTH_TYPES, [
@@ -44,17 +44,17 @@ async function withdraw(
     sig.s,
     {
       gasLimit: 3000000,
-    },
+    }
   );
 }
 
 const provider = new ethers.providers.JsonRpcProvider(
-  `http://localhost:${process.env.DEV_GANACHE_PORT}`,
+  `http://localhost:${process.env.DEV_GANACHE_PORT}`
 );
 const signer1 = provider.getSigner(1);
 
 const alice = new ethers.Wallet(
-  '0x5d862464fe9303452126c8bc94274b8c5f9874cbd219789b3eb2128075a76f72',
+  '0x5d862464fe9303452126c8bc94274b8c5f9874cbd219789b3eb2128075a76f72'
 );
 const bob = new ethers.Wallet('0xdf02719c4df8b9b8ac7f551fcb5d9ef48fa27eef7a66453879f4d8fdc6e78fb1');
 const guarantor = ethers.Wallet.createRandom();
@@ -127,7 +127,7 @@ describe('Nitro (ETH management)', () => {
     nitroAdjudicator = new ethers.Contract(
       NitroAdjudicatorAddress,
       NitroAdjudicatorArtifact.abi,
-      signer1,
+      signer1
     );
     const nitroLibraryAddress = NitroLibraryArtifact.networks[networkId].address;
     nitroLibrary = new ethers.Contract(nitroLibraryAddress, NitroLibraryArtifact.abi, signer1);
@@ -145,7 +145,7 @@ describe('Nitro (ETH management)', () => {
         AddressZero,
         {
           value: DEPOSIT_AMOUNT,
-        },
+        }
       )).wait();
       await expect(receipt.status).toEqual(1);
     });
@@ -220,7 +220,7 @@ describe('Nitro (ETH management)', () => {
         AddressZero,
         {
           value: DEPOSIT_AMOUNT.mul(2),
-        },
+        }
       )).wait();
     });
     it('Emits Deposit event (partial) ', async () => {
@@ -231,7 +231,7 @@ describe('Nitro (ETH management)', () => {
     });
     it('Partial refund', async () => {
       await expect(Number(await signer1.getBalance())).toBeGreaterThan(
-        Number(balanceBefore.sub(DEPOSIT_AMOUNT.mul(2))),
+        Number(balanceBefore.sub(DEPOSIT_AMOUNT.mul(2)))
       ); // TODO compute precisely, taking actual gas fees into account
     });
   });
@@ -254,20 +254,20 @@ describe('Nitro (ETH management)', () => {
         alice,
         aliceDest.address,
         alice,
-        WITHDRAWAL_AMOUNT,
+        WITHDRAWAL_AMOUNT
       )).wait();
       await expect(receipt.status).toEqual(1);
     });
 
     it('Destination balance increases', async () => {
       await expect(await provider.getBalance(aliceDest.address)).toEqual(
-        beforeBalance.add(WITHDRAWAL_AMOUNT),
+        beforeBalance.add(WITHDRAWAL_AMOUNT)
       );
     });
 
     it('holdings[participant][0x] decreases', async () => {
       await expect(await nitroAdjudicator.holdings(alice.address, AddressZero)).toEqual(
-        allocatedAtStart.sub(WITHDRAWAL_AMOUNT),
+        allocatedAtStart.sub(WITHDRAWAL_AMOUNT)
       );
     });
   });
@@ -320,14 +320,14 @@ describe('Nitro (ETH management)', () => {
     beforeAll(async () => {
       const amountHeldAgainstLedgerChannel = await nitroAdjudicator.holdings(
         getChannelID(ledgerChannel),
-        AddressZero,
+        AddressZero
       );
       await nitroAdjudicator.deposit(
         getChannelID(ledgerChannel),
         amountHeldAgainstLedgerChannel,
         DEPOSIT_AMOUNT,
         AddressZero,
-        { value: DEPOSIT_AMOUNT },
+        { value: DEPOSIT_AMOUNT }
       );
       const allocationOutcome = {
         destination: [alice.address, bob.address],
@@ -338,12 +338,12 @@ describe('Nitro (ETH management)', () => {
       };
       await (await nitroAdjudicator.setOutcome(
         getChannelID(ledgerChannel),
-        allocationOutcome,
+        allocationOutcome
       )).wait();
 
       allocatedToChannel = await nitroAdjudicator.holdings(
         getChannelID(ledgerChannel),
-        AddressZero,
+        AddressZero
       );
       allocatedToAlice = await nitroAdjudicator.holdings(alice.address, AddressZero);
     });
@@ -353,7 +353,7 @@ describe('Nitro (ETH management)', () => {
         getChannelID(ledgerChannel),
         alice.address,
         allocation[0],
-        AddressZero,
+        AddressZero
       );
       const receipt1 = await tx1.wait();
       await expect(receipt1.status).toEqual(1);
@@ -361,13 +361,13 @@ describe('Nitro (ETH management)', () => {
 
     it('holdings[to][0x] increases', async () => {
       await expect(await nitroAdjudicator.holdings(alice.address, AddressZero)).toEqual(
-        allocatedToAlice.add(allocation[0]),
+        allocatedToAlice.add(allocation[0])
       );
     });
 
     it('holdings[from][0x] decreases', async () => {
       await expect(
-        await nitroAdjudicator.holdings(getChannelID(ledgerChannel), AddressZero),
+        await nitroAdjudicator.holdings(getChannelID(ledgerChannel), AddressZero)
       ).toEqual(allocatedToChannel.sub(allocation[0]));
     });
   });
@@ -381,14 +381,14 @@ describe('Nitro (ETH management)', () => {
       startBal = await provider.getBalance(aliceDest.address);
       amountHeldAgainstLedgerChannel = await nitroAdjudicator.holdings(
         getChannelID(ledgerChannel),
-        AddressZero,
+        AddressZero
       );
       await (await nitroAdjudicator.deposit(
         getChannelID(ledgerChannel),
         amountHeldAgainstLedgerChannel,
         DEPOSIT_AMOUNT,
         AddressZero,
-        { value: DEPOSIT_AMOUNT },
+        { value: DEPOSIT_AMOUNT }
       )).wait();
 
       const allocationOutcome = {
@@ -400,12 +400,12 @@ describe('Nitro (ETH management)', () => {
       };
       await (await nitroAdjudicator.setOutcome(
         getChannelID(ledgerChannel),
-        allocationOutcome,
+        allocationOutcome
       )).wait();
 
       allocatedToChannel = await nitroAdjudicator.holdings(
         getChannelID(ledgerChannel),
-        AddressZero,
+        AddressZero
       );
     });
 
@@ -426,7 +426,7 @@ describe('Nitro (ETH management)', () => {
         sig.v,
         sig.r,
         sig.s,
-        { gasLimit: 3000000 },
+        { gasLimit: 3000000 }
       );
       const receipt1 = await tx1.wait();
       await expect(receipt1.status).toEqual(1);
@@ -441,7 +441,7 @@ describe('Nitro (ETH management)', () => {
     it('holdings[channel][0x] decreases', async () => {
       const currentChannelHolding = await nitroAdjudicator.holdings(
         getChannelID(ledgerChannel),
-        AddressZero,
+        AddressZero
       );
       const expectedChannelHolding = allocatedToChannel.sub(allocation[0]);
       await expect(currentChannelHolding).toEqual(expectedChannelHolding);
@@ -474,14 +474,14 @@ describe('Nitro (ETH management)', () => {
       await (await nitroAdjudicator.setOutcome(guarantor.address, guarantee)).wait();
       await (await nitroAdjudicator.setOutcome(
         getChannelID(ledgerChannel),
-        allocationOutcome,
+        allocationOutcome
       )).wait();
 
       // Other tests may have deposited into guarantor.address, but we
       // ensure that the guarantor has at least claimAmount in holdings
       const amountHeldAgainstGuarantor = await nitroAdjudicator.holdings(
         guarantor.address,
-        AddressZero,
+        AddressZero
       );
       await (await nitroAdjudicator.deposit(
         guarantor.address,
@@ -490,7 +490,7 @@ describe('Nitro (ETH management)', () => {
         AddressZero,
         {
           value: claimAmount,
-        },
+        }
       )).wait();
 
       startBal = await nitroAdjudicator.holdings(guarantor.address, AddressZero);
@@ -513,7 +513,7 @@ describe('Nitro (ETH management)', () => {
         guarantor.address,
         recipient,
         claimAmount,
-        AddressZero,
+        AddressZero
       );
       const receipt1 = await tx1.wait();
       await expect(receipt1.status).toEqual(1);
@@ -526,13 +526,13 @@ describe('Nitro (ETH management)', () => {
 
     it('holdings[guarantor][0x] decreases', async () => {
       expect(await nitroAdjudicator.holdings(guarantor.address, AddressZero)).toEqual(
-        startBal.sub(claimAmount),
+        startBal.sub(claimAmount)
       );
     });
 
     it('holdings[recipient][0x] increases', async () => {
       expect(await nitroAdjudicator.holdings(recipient, AddressZero)).toEqual(
-        startBalRecipient.add(claimAmount),
+        startBalRecipient.add(claimAmount)
       );
     });
   });
@@ -568,7 +568,7 @@ describe('Nitro (ETH management)', () => {
       const recipient = alice.address;
       const funding = ethers.utils.bigNumberify(2);
       await expect(await nitroLibrary.affords(recipient, outcome, funding, AddressZero)).toEqual(
-        funding,
+        funding
       );
     });
 
@@ -576,7 +576,7 @@ describe('Nitro (ETH management)', () => {
       const recipient = alice.address;
       const funding = aBal;
       await expect(
-        (await nitroLibrary.affords(recipient, outcome, funding, AddressZero)).toHexString(),
+        (await nitroLibrary.affords(recipient, outcome, funding, AddressZero)).toHexString()
       ).toEqual(funding);
     });
 
@@ -586,7 +586,7 @@ describe('Nitro (ETH management)', () => {
         .add(1)
         .toHexString();
       await expect(
-        (await nitroLibrary.affords(recipient, outcome, funding, AddressZero)).toHexString(),
+        (await nitroLibrary.affords(recipient, outcome, funding, AddressZero)).toHexString()
       ).toEqual(aBal);
     });
 
@@ -597,7 +597,7 @@ describe('Nitro (ETH management)', () => {
         .add(1)
         .toHexString();
       await expect(
-        (await nitroLibrary.affords(recipient, outcome, funding, randomAddress)).toHexString(),
+        (await nitroLibrary.affords(recipient, outcome, funding, randomAddress)).toHexString()
       ).toEqual(bigNumberify(0).toHexString());
     });
 
@@ -608,7 +608,7 @@ describe('Nitro (ETH management)', () => {
         .toHexString();
       const zero = ethers.utils.bigNumberify(0);
       await expect(await nitroLibrary.affords(recipient, outcome, funding, AddressZero)).toEqual(
-        zero,
+        zero
       );
     });
   });
