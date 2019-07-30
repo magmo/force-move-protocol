@@ -590,6 +590,17 @@ describe('Nitro (ETH management)', () => {
       ).toEqual(aBal);
     });
 
+    it('returns zero when a different asset is targeted', async () => {
+      const recipient = alice.address;
+      const randomAddress = ethers.Wallet.createRandom().address;
+      const funding = bigNumberify(aBal)
+        .add(1)
+        .toHexString();
+      await expect(
+        (await nitroLibrary.affords(recipient, outcome, funding, randomAddress)).toHexString(),
+      ).toEqual(bigNumberify(0).toHexString());
+    });
+
     it('returns zero when recipient is not a participant', async () => {
       const recipient = aliceDest.address;
       const funding = bigNumberify(aBal)
