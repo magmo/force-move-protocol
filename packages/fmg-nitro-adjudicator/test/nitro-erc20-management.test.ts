@@ -460,6 +460,19 @@ describe('Nitro (ERC20 management)', () => {
         await nitroAdjudicator.holdings(getChannelID(ledgerChannel), erc20Address)
       ).toEqual(allocatedToChannel.sub(allocation[0]));
     });
+
+    it('outcomes updated', async () => {
+      const updatedAllocationOutcome = {
+        destination: [alice.address, bob.address],
+        allocation: [0, bBal],
+        finalizedAt: ethers.utils.bigNumberify(1),
+        challengeCommitment: getEthersObjectForCommitment(commitment0),
+        token: [erc20Address, erc20Address],
+      };
+      await expect(
+        getOutcomeFromParameters(await nitroAdjudicator.getOutcome(getChannelID(ledgerChannel)))
+      ).toEqual(updatedAllocationOutcome);
+    });
   });
 
   describe('Claiming ERC20 from a Guarantor', () => {
