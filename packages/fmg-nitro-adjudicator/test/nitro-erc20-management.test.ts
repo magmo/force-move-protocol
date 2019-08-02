@@ -464,7 +464,7 @@ describe('Nitro (ERC20 management)', () => {
     it('outcomes updated', async () => {
       const updatedAllocationOutcome = {
         destination: [alice.address, bob.address],
-        allocation: [0, bBal],
+        allocation: ['0x00', bBal],
         finalizedAt: ethers.utils.bigNumberify(1),
         challengeCommitment: getEthersObjectForCommitment(commitment0),
         token: [erc20Address, erc20Address],
