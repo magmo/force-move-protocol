@@ -370,6 +370,19 @@ describe('Nitro (ETH management)', () => {
         await nitroAdjudicator.holdings(getChannelID(ledgerChannel), AddressZero)
       ).toEqual(allocatedToChannel.sub(allocation[0]));
     });
+
+    it('outcomes updated', async () => {
+      const updatedAllocationOutcome = {
+        destination: [alice.address, bob.address],
+        allocation: [0, bBal],
+        finalizedAt: ethers.utils.bigNumberify(1),
+        challengeCommitment: getEthersObjectForCommitment(commitment0),
+        token: [AddressZero, AddressZero],
+      };
+      await expect(
+        getOutcomeFromParameters(await nitroAdjudicator.getOutcome(getChannelID(ledgerChannel)))
+      ).toEqual(updatedAllocationOutcome);
+    });
   });
 
   describe('Transfer and withdraw ETH (outcome = final, holdings[fromChannel] > outcomes[fromChannel].destination', () => {
