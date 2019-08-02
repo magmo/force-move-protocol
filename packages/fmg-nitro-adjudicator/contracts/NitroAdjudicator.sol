@@ -44,7 +44,7 @@ contract INitroLibrary { // Abstraction of the NitroLibrary contract
 
     function moveAuthorized(Commitment.CommitmentStruct calldata _commitment, Signature calldata signature) external pure returns (bool);
 
-        function reduce(
+    function reduce(
         Outcome memory outcome,
         address recipient,
         uint amount,
@@ -84,7 +84,7 @@ contract NitroAdjudicator {
     }
 
     mapping(address => mapping(address => uint)) public holdings;
-    mapping(address => INitroLibrary.Outcome) public outcomes; // Abs
+    mapping(address => INitroLibrary.Outcome) internal outcomes; // Abs
     address private constant zeroAddress = address(0);
 
     // **************
@@ -206,6 +206,8 @@ function deposit(address destination, uint expectedHeld,
 
         holdings[destination][token] = holdings[destination][token] + amount;
         holdings[channel][token] = holdings[channel][token] - amount;
+        outcomes[channel] = Library.reduce(outcomes[channel], destination, amount, token);
+
     }
 
 
