@@ -12,25 +12,25 @@ contract TestNitroAdjudicator is NitroAdjudicator {
     // Helper functions
     // ****************
 
-    // function isChannelClosedPub(address channel) public view returns (bool) {
-    //     return isChannelClosed(channel);
-    // }
+    function isChannelClosedPub(address channel) public view returns (bool) {
+        return isChannelClosed(channel);
+    }
 
     // *********************************
     // Test helper functions
     // *********************************
 
-    // function isChallengeOngoing(address channel) public view returns (bool) {
-    //     return outcomes[channel].finalizedAt > now;
-    // }
+    function isChallengeOngoing(address channel) public view returns (bool) {
+        return outcomes[channel].finalizedAt > now;
+    }
 
     function channelId(Commitment.CommitmentStruct memory commitment) public pure returns (address) {
         return commitment.channelId();
     }
 
-    // function outcomeFinal(address channel) public view returns (bool) {
-    //     return outcomes[channel].finalizedAt > 0 && outcomes[channel].finalizedAt < now;
-    // }
+    function outcomeFinal(address channel) public view returns (bool) {
+        return outcomes[channel].finalizedAt > 0 && outcomes[channel].finalizedAt < now;
+    }
 
     function setOutcome(address channel, INitroLibrary.Outcome memory outcome) public {
         outcomes[channel] = outcome;

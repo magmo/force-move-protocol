@@ -35,7 +35,7 @@ async function setupContracts() {
     destination: [],
     token: [],
   });
-  nullOutcome = { ...unwrap(await nitro.outcomes(nitro.address)) };
+  nullOutcome = { ...unwrap(await nitro.getOutcome(nitro.address)) };
 }
 
 const getHexForCommitment = (commitment: CountingCommitment) => {

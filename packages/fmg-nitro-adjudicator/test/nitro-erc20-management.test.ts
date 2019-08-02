@@ -82,6 +82,7 @@ const getOutcomeFromParameters = (parameters: any[]) => {
     finalizedAt: ethers.utils.bigNumberify(parameters[1]),
     challengeCommitment: asEthersObject(fromParameters(parameters[2])),
     allocation: parameters[3].map(a => a.toHexString()),
+    token: parameters[4],
   };
   return outcome;
 };
