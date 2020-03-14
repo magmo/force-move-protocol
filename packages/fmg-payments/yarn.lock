@@ -85,9 +85,9 @@ acorn-walk@^6.0.1:
   integrity sha512-OtUw6JUTgxA2QoqqmrmQ7F2NYqiBPi/L2jqHyFtllhOUvXYQXf0Z1CYUinIfyT4bTCGmrA7gX9FvHA81uzCoVw==
 
 acorn@^5.5.3:
-  version "5.7.3"
-  resolved "https://registry.yarnpkg.com/acorn/-/acorn-5.7.3.tgz#67aa231bf8812974b85235a96771eb6bd07ea279"
-  integrity sha512-T/zvzYRfbVojPWahDsE5evJdHb3oJoQfFbsrKM7w5Zcs++Tr257tia3BmMP8XYVjp1S9RZXQMh7gao96BlqZOw==
+  version "5.7.4"
+  resolved "https://registry.yarnpkg.com/acorn/-/acorn-5.7.4.tgz#3e8d8a9947d0599a1796d10225d7432f4a4acf5e"
+  integrity sha512-1D++VG7BhrtvQpNbBzovKNc1FLGGEE/oGe7b9xJm/RFHMBeUaUGpluV9RLjZa47YFdPcDAenEYuq9pQPcMdLJg==
 
 acorn@^6.0.1:
   version "6.1.1"
@@ -1825,10 +1825,10 @@ find-up@^3.0.0:
   dependencies:
     locate-path "^3.0.0"
 
-fmg-core@^0.5.8:
-  version "0.5.8"
-  resolved "https://registry.yarnpkg.com/fmg-core/-/fmg-core-0.5.8.tgz#3a183297d1b2a2f7de70721ac02ae40b30eb0033"
-  integrity sha512-TRee/KSMg/45WKibOrV2iuJuLrqV8fBpZnj5YU2ns9EoR6XV1jtn0h1yiyxhtUJiWvkQEE3oowuJ/yUoqgKmSA==
+fmg-core@^0.5.9:
+  version "0.5.9"
+  resolved "https://registry.yarnpkg.com/fmg-core/-/fmg-core-0.5.9.tgz#9feee0ce880d2cb6d59985116d01acc9eab90a95"
+  integrity sha512-YpEPex8mqzRZFMFXl4HdBxQIWY+gOePROQ1OwBMBZKSECOv+OfKAiVYay6CRJKHBK47e1GExCV5kDch0VMzkHw==
   dependencies:
     bn.js "^4.11.8"
     ethers "^4.0.26"
