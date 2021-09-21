@@ -1825,10 +1825,10 @@ find-up@^3.0.0:
   dependencies:
     locate-path "^3.0.0"
 
-fmg-core@^0.5.8:
-  version "0.5.8"
-  resolved "https://registry.yarnpkg.com/fmg-core/-/fmg-core-0.5.8.tgz#3a183297d1b2a2f7de70721ac02ae40b30eb0033"
-  integrity sha512-TRee/KSMg/45WKibOrV2iuJuLrqV8fBpZnj5YU2ns9EoR6XV1jtn0h1yiyxhtUJiWvkQEE3oowuJ/yUoqgKmSA==
+fmg-core@^0.5.9:
+  version "0.5.9"
+  resolved "https://registry.yarnpkg.com/fmg-core/-/fmg-core-0.5.9.tgz#9feee0ce880d2cb6d59985116d01acc9eab90a95"
+  integrity sha512-YpEPex8mqzRZFMFXl4HdBxQIWY+gOePROQ1OwBMBZKSECOv+OfKAiVYay6CRJKHBK47e1GExCV5kDch0VMzkHw==
   dependencies:
     bn.js "^4.11.8"
     ethers "^4.0.26"
@@ -5185,9 +5185,9 @@ tmp@0.0.33:
     os-tmpdir "~1.0.2"
 
 tmpl@1.0.x:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/tmpl/-/tmpl-1.0.4.tgz#23640dd7b42d00433911140820e5cf440e521dd1"
-  integrity sha1-I2QN17QtAEM5ERQIIOXPRA5SHdE=
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/tmpl/-/tmpl-1.0.5.tgz#8683e0b902bb9c20c4f726e3c0b69f36518c07cc"
+  integrity sha512-3f0uOEAQwIqGuWW2MVzYg8fV/QNnc/IpuJNG837rLuczAaLVHslWHZQj4IGiEl5Hs3kkbhwL9Ab7Hrsmuj+Smw==
 
 to-buffer@^1.1.1:
   version "1.1.1"
