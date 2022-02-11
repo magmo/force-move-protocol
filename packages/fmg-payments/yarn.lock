@@ -1825,10 +1825,10 @@ find-up@^3.0.0:
   dependencies:
     locate-path "^3.0.0"
 
-fmg-core@^0.5.8:
-  version "0.5.8"
-  resolved "https://registry.yarnpkg.com/fmg-core/-/fmg-core-0.5.8.tgz#3a183297d1b2a2f7de70721ac02ae40b30eb0033"
-  integrity sha512-TRee/KSMg/45WKibOrV2iuJuLrqV8fBpZnj5YU2ns9EoR6XV1jtn0h1yiyxhtUJiWvkQEE3oowuJ/yUoqgKmSA==
+fmg-core@^0.5.9:
+  version "0.5.9"
+  resolved "https://registry.yarnpkg.com/fmg-core/-/fmg-core-0.5.9.tgz#9feee0ce880d2cb6d59985116d01acc9eab90a95"
+  integrity sha512-YpEPex8mqzRZFMFXl4HdBxQIWY+gOePROQ1OwBMBZKSECOv+OfKAiVYay6CRJKHBK47e1GExCV5kDch0VMzkHw==
   dependencies:
     bn.js "^4.11.8"
     ethers "^4.0.26"
@@ -4099,9 +4099,9 @@ path@0.12.7:
     util "^0.10.3"
 
 pathval@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/pathval/-/pathval-1.1.0.tgz#b942e6d4bde653005ef6b71361def8727d0645e0"
-  integrity sha1-uULm1L3mUwBe9rcTYd74cn0GReA=
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/pathval/-/pathval-1.1.1.tgz#8534e77a77ce7ac5a2512ea21e0fdb8fcf6c3d8d"
+  integrity sha512-Dp6zGqpTdETdR63lehJYPeIOqpiNBNtc7BpWSLrOje7UaIsE5aY92r/AunQA7rsXvet3lrJ3JnZX29UPTKXyKQ==
 
 pbkdf2@^3.0.3:
   version "3.0.17"
